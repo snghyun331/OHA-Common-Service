@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Entity('District')
-export class DistrictEntity {
+@Entity('District-Name')
+export class DistrictNameEntity {
   @PrimaryColumn({ type: 'varchar', nullable: false })
   hcode: string;
 
@@ -13,16 +13,4 @@ export class DistrictEntity {
 
   @Column({ type: 'varchar', nullable: false })
   thirdAddress: string;
-
-  @Column({ type: 'numeric', nullable: false })
-  nx: number;
-
-  @Column({ type: 'numeric', nullable: false })
-  ny: number;
-
-  @Column({ type: 'double precision', nullable: false })
-  longitude: number;
-
-  @Column({ type: 'double precision', nullable: false })
-  latitude: number;
 }

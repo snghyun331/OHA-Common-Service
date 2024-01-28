@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DistrictEntity } from './entities/district.entity';
+import { DistrictGridEntity } from './entities/district-grid.entity';
+import { DistrictNameEntity } from './entities/district-name.entity';
 import { LocationsController } from './locations.controller';
 import { LocationsService } from './locations.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([DistrictEntity])],
+  imports: [TypeOrmModule.forFeature([DistrictGridEntity, DistrictNameEntity])],
   controllers: [LocationsController],
   providers: [LocationsService],
 })
