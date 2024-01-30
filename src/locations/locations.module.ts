@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DistrictGridEntity } from './entities/district-grid.entity';
 import { DistrictNameEntity } from './entities/district-name.entity';
@@ -8,6 +8,6 @@ import { LocationsService } from './locations.service';
 @Module({
   imports: [TypeOrmModule.forFeature([DistrictGridEntity, DistrictNameEntity])],
   controllers: [LocationsController],
-  providers: [LocationsService],
+  providers: [LocationsService, Logger],
 })
 export class LocationsModule {}
