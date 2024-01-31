@@ -9,6 +9,7 @@ pipeline {
         DB_USER = credentials('db_user')
         DB_PW = credentials('db_pw')
         DB_NAME = credentials('db_name')
+        JWT_SECRET_KEY = credentials('jwt_secret_key')
         Eureka_HOST = credentials('eureka_host')
         Eureka_PORT = credentials('eureka_port')
     }
@@ -49,6 +50,7 @@ pipeline {
                             echo "DB_USER=${DB_USER}" >> .product.env
                             echo "DB_PW=${DB_PW}" >> .product.env
                             echo "DB_NAME=${DB_NAME}" >> .product.env
+                            echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}" >> .product.env
                             echo "Eureka_HOST=${Eureka_HOST}" >> .product.env
                             echo "Eureka_PORT=${Eureka_PORT}" >> .product.env
                         '''

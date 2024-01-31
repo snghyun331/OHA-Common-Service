@@ -4,10 +4,11 @@ import { DistrictGridEntity } from './entities/district-grid.entity';
 import { DistrictNameEntity } from './entities/district-name.entity';
 import { LocationsController } from './locations.controller';
 import { LocationsService } from './locations.service';
+import { JwtStrategy } from 'src/auth/strategies/jwt.access.strategy';
 
 @Module({
   imports: [TypeOrmModule.forFeature([DistrictGridEntity, DistrictNameEntity])],
   controllers: [LocationsController],
-  providers: [LocationsService, Logger],
+  providers: [LocationsService, JwtStrategy, Logger],
 })
 export class LocationsModule {}

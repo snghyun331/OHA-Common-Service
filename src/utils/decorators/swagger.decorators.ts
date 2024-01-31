@@ -1,10 +1,12 @@
-import { ApiOperation, ApiResponse, ApiTags, ApiBody, ApiParam, ApiConsumes } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiBody, ApiParam, ApiConsumes, ApiBearerAuth } from '@nestjs/swagger';
 
 export const ApiTagLocation = () => ApiTags('LOCATION');
 
 export const ApiTagWeather = () => ApiTags('WEATHER');
 
 export const ApiDescription = (summary: string) => ApiOperation({ summary });
+
+export const ApiBearerAuthAccessToken = () => ApiBearerAuth('access-token');
 
 export const ApiConsumesMultiForm = () => ApiConsumes('multipart/form-data');
 

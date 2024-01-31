@@ -1,6 +1,7 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { LocationsService } from './locations.service';
 import {
+  ApiBearerAuthAccessToken,
   ApiDescription,
   ApiParamDescription,
   ApiResponseErrorBadRequest,
@@ -9,6 +10,7 @@ import {
   ApiTagLocation,
 } from 'src/utils/decorators';
 import { GetDistrictCodeDto } from './dto/get-district-code.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @ApiTagLocation()
 @Controller('api/common/location')
@@ -19,6 +21,8 @@ export class LocationsController {
   @ApiResponseSuccess()
   @ApiResponseErrorNotFound('지원 혹은 존재하지 않는 코드')
   @ApiParamDescription('code', '숫자로 입력해주세요')
+  @ApiBearerAuthAccessToken()
+  @UseGuards(JwtAuthGuard)
   @Get('getDistrictName/:code')
   async getDistrictName(@Param('code') code: string): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.getNameInfo(code);
@@ -29,7 +33,9 @@ export class LocationsController {
   @ApiResponseSuccess()
   @ApiResponseErrorBadRequest('address가 요청되지 않음')
   @ApiResponseErrorNotFound('요청한 address와 일치하는 코드가 없음')
+  @ApiBearerAuthAccessToken()
   @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
   @Post('getdistrictcode')
   async getDistrictCode(@Body() getDistrictCodeDto: GetDistrictCodeDto): Promise<{ message: string; result: any }> {
     const code = await this.locationsService.getCodeFromDistrictName(getDistrictCodeDto);
