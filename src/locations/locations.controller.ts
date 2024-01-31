@@ -1,12 +1,14 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestjs/common';
 import { LocationsService } from './locations.service';
 import {
   ApiDescription,
   ApiParamDescription,
+  ApiResponseErrorBadRequest,
   ApiResponseErrorNotFound,
   ApiResponseSuccess,
   ApiTagLocation,
 } from 'src/utils/decorators';
+import { GetDistrictCodeDto } from './dto/get-district-code.dto';
 
 @ApiTagLocation()
 @Controller('api/common/location')
@@ -21,5 +23,16 @@ export class LocationsController {
   async getDistrictName(@Param('code') code: string): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.getNameInfo(code);
     return { message: '행정구역명을 성공적으로 조회했습니다', result };
+  }
+
+  @ApiDescription(' (법)행정동명으로 (법)행정코드 반환')
+  @ApiResponseSuccess()
+  @ApiResponseErrorBadRequest('address가 요청되지 않음')
+  @ApiResponseErrorNotFound('요청한 address와 일치하는 코드가 없음')
+  @HttpCode(HttpStatus.OK)
+  @Post('getdistrictcode')
+  async getDistrictCode(@Body() getDistrictCodeDto: GetDistrictCodeDto): Promise<{ message: string; result: any }> {
+    const code = await this.locationsService.getCodeFromDistrictName(getDistrictCodeDto);
+    return { message: 'code를 성공적으로 가져왔습니다', result: code };
   }
 }
