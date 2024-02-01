@@ -2,8 +2,8 @@ import { BadRequestException, Inject, Injectable, Logger, LoggerService, NotFoun
 import { InjectRepository } from '@nestjs/typeorm';
 import { DistrictNameEntity } from './entities/district-name.entity';
 import { Repository } from 'typeorm';
-import { GetDistrictCodeDto } from './dto/get-district-code.dto';
-import { GetNameByCodesDto } from './dto/get-name-by-codes.dto';
+import { GetCodeDto } from './dto/get-code.dto';
+import { GetNameDto } from './dto/get-name.dto';
 
 @Injectable()
 export class LocationsService {
@@ -14,7 +14,7 @@ export class LocationsService {
     private districtNameRepository: Repository<DistrictNameEntity>,
   ) {}
 
-  async getNameInfoByCode(code: string) {
+  async getNameByCode(code: string) {
     try {
       const result = await this.districtNameRepository.findOne({ where: { code } });
       if (!result) {
@@ -27,7 +27,7 @@ export class LocationsService {
     }
   }
 
-  async getCodeFromDistrictName(dto: GetDistrictCodeDto) {
+  async getCodeByName(dto: GetCodeDto) {
     try {
       const { address } = dto;
       if (!address) {
@@ -51,7 +51,7 @@ export class LocationsService {
     }
   }
 
-  async getNameInfoByCodes(dto: GetNameByCodesDto) {
+  async getNameByCodes(dto: GetNameDto) {
     try {
       const { codes } = dto;
       if (!codes || codes.length === 0) {

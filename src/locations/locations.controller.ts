@@ -9,9 +9,9 @@ import {
   ApiResponseSuccess,
   ApiTagLocation,
 } from 'src/utils/decorators';
-import { GetDistrictCodeDto } from './dto/get-district-code.dto';
+import { GetCodeDto } from './dto/get-code.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { GetNameByCodesDto } from './dto/get-name-by-codes.dto';
+import { GetNameDto } from './dto/get-name.dto';
 
 @ApiTagLocation()
 @Controller('api/common/location')
@@ -25,9 +25,9 @@ export class LocationsController {
   @ApiBearerAuthAccessToken()
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
-  @Post('getdistrictcode')
-  async getDistrictCode(@Body() dto: GetDistrictCodeDto): Promise<{ message: string; result: any }> {
-    const code = await this.locationsService.getCodeFromDistrictName(dto);
+  @Post('getcode')
+  async getDistrictCode(@Body() dto: GetCodeDto): Promise<{ message: string; result: any }> {
+    const code = await this.locationsService.getCodeByName(dto);
     return { message: 'code를 성공적으로 가져왔습니다', result: code };
   }
 
@@ -37,8 +37,8 @@ export class LocationsController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @Post('getnamebycodes')
-  async getDistrictNameByCodes(@Body() dto: GetNameByCodesDto): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.getNameInfoByCodes(dto);
+  async getDistrictNameByCodes(@Body() dto: GetNameDto): Promise<{ message: string; result: any }> {
+    const result = await this.locationsService.getNameByCodes(dto);
     return { message: '성공', result };
   }
 
@@ -48,9 +48,9 @@ export class LocationsController {
   @ApiParamDescription('code', '숫자로 입력해주세요')
   @ApiBearerAuthAccessToken()
   @UseGuards(JwtAuthGuard)
-  @Get('getDistrictName/:code')
+  @Get('getnamebycode/:code')
   async getDistrictName(@Param('code') code: string): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.getNameInfoByCode(code);
+    const result = await this.locationsService.getNameByCode(code);
     return { message: '행정구역명을 성공적으로 조회했습니다', result };
   }
 }
