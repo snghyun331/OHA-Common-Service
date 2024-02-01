@@ -26,8 +26,8 @@ export class LocationsController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @Post('getdistrictcode')
-  async getDistrictCode(@Body() getDistrictCodeDto: GetDistrictCodeDto): Promise<{ message: string; result: any }> {
-    const code = await this.locationsService.getCodeFromDistrictName(getDistrictCodeDto);
+  async getDistrictCode(@Body() dto: GetDistrictCodeDto): Promise<{ message: string; result: any }> {
+    const code = await this.locationsService.getCodeFromDistrictName(dto);
     return { message: 'code를 성공적으로 가져왔습니다', result: code };
   }
 
@@ -37,10 +37,8 @@ export class LocationsController {
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @Post('getnamebycodes')
-  async getDistrictNameByCodes(
-    @Body() getNameByCodesDto: GetNameByCodesDto,
-  ): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.getNameInfoByCodes(getNameByCodesDto);
+  async getDistrictNameByCodes(@Body() dto: GetNameByCodesDto): Promise<{ message: string; result: any }> {
+    const result = await this.locationsService.getNameInfoByCodes(dto);
     return { message: '성공', result };
   }
 

@@ -11,12 +11,12 @@ export class LocationsService {
     @Inject(Logger)
     private readonly logger: LoggerService,
     @InjectRepository(DistrictNameEntity)
-    private locationsRepository: Repository<DistrictNameEntity>,
+    private districtNameRepository: Repository<DistrictNameEntity>,
   ) {}
 
   async getNameInfoByCode(code: string) {
     try {
-      const result = await this.locationsRepository.findOne({ where: { code } });
+      const result = await this.districtNameRepository.findOne({ where: { code } });
       if (!result) {
         throw new NotFoundException(`${code}코드번호는 지원하지 않습니다`);
       }
@@ -27,9 +27,9 @@ export class LocationsService {
     }
   }
 
-  async getCodeFromDistrictName(getDistrictCodeDto: GetDistrictCodeDto) {
+  async getCodeFromDistrictName(dto: GetDistrictCodeDto) {
     try {
-      const { address } = getDistrictCodeDto;
+      const { address } = dto;
       if (!address) {
         throw new BadRequestException('address를 입력해주세요');
       }
@@ -37,7 +37,7 @@ export class LocationsService {
       const firstAddress = splitAddress.shift();
       const thirdAddress = splitAddress.pop();
       const secondAddress = splitAddress.join(' ');
-      const districtNameInfo = await this.locationsRepository.findOne({
+      const districtNameInfo = await this.districtNameRepository.findOne({
         where: { firstAddress, secondAddress, thirdAddress },
       });
       if (!districtNameInfo) {
@@ -58,7 +58,7 @@ export class LocationsService {
         throw new BadRequestException('code가 요청되지 않았습니다');
       }
       const promises = codes.map(async (code) => {
-        const result = await this.locationsRepository.findOne({ where: { code } });
+        const result = await this.districtNameRepository.findOne({ where: { code } });
         if (!result) {
           throw new NotFoundException(`code가 ${code}인 지역은 존재하지 않습니다`);
         }
