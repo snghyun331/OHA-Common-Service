@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DistrictNameEntity } from './entities/district-name.entity';
 import { Repository } from 'typeorm';
 import { GetDistrictCodeDto } from './dto/get-district-code.dto';
+import { GetNameByCodesDto } from './dto/get-name-by-codes.dto';
 
 @Injectable()
 export class LocationsService {
@@ -13,7 +14,7 @@ export class LocationsService {
     private locationsRepository: Repository<DistrictNameEntity>,
   ) {}
 
-  async getNameInfo(code: string) {
+  async getNameInfoByCode(code: string) {
     try {
       const result = await this.locationsRepository.findOne({ where: { code } });
       if (!result) {
@@ -44,6 +45,27 @@ export class LocationsService {
       }
       const { code } = districtNameInfo;
       return { code };
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
+  async getNameInfoByCodes(dto: GetNameByCodesDto) {
+    try {
+      const { codes } = dto;
+      if (!codes || codes.length === 0) {
+        throw new BadRequestException('code가 요청되지 않았습니다');
+      }
+      const promises = codes.map(async (code) => {
+        const result = await this.locationsRepository.findOne({ where: { code } });
+        if (!result) {
+          throw new NotFoundException(`code가 ${code}인 지역은 존재하지 않습니다`);
+        }
+        return result;
+      });
+      const results = await Promise.all(promises);
+      return results;
     } catch (e) {
       this.logger.error(e);
       throw e;
