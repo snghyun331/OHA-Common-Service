@@ -33,6 +33,8 @@ export class LocationsController {
 
   @ApiDescription('(법)행정동코드 리스트로 행정구역 조회')
   @ApiResponseSuccess()
+  @ApiResponseErrorBadRequest('codes가 요청되지 않음')
+  @ApiResponseErrorNotFound('요청한 code와 일치하지 않는 (법)행정동명이 있음')
   @ApiBearerAuthAccessToken()
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
