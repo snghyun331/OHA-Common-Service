@@ -1,4 +1,11 @@
-import { Inject, Injectable, InternalServerErrorException, Logger, LoggerService } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  LoggerService,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WeatherEntity } from './entities/weather.entity';
 import { EntityManager, Repository } from 'typeorm';
@@ -7,6 +14,9 @@ import { lastValueFrom } from 'rxjs';
 import { NUM_OF_ROWS, PAGE_NO } from 'src/utils/constant';
 import { KoreaDate } from 'src/utils/korea-time';
 import { AvailableGrids } from 'src/utils/available-grids';
+import { GetDataDto } from './dto/get-data.dto';
+import { SkyType } from './enums/sky.enum';
+import { PtyType } from './enums/pty.enum';
 
 @Injectable()
 export class WeathersService {
@@ -68,6 +78,60 @@ export class WeathersService {
     } catch (e) {
       this.logger.error(e);
       throw e;
+    }
+  }
+
+  async getDatas(dto: GetDataDto) {
+    const { nx, ny } = dto;
+    const koreaFullDate = new KoreaDate();
+    // const currentDate = koreaFullDate.getFullDate();
+    // const currentHour = koreaFullDate.getFullTime().slice(0, 2);
+    const currentDate = '20240205';
+    const currentHour = '17';
+    const weatherInfos = await this.weatherRepository.findOne({
+      where: { fcstDate: currentDate, fcstTime: currentHour + '00', nx, ny },
+    });
+    if (!weatherInfos) {
+      throw new NotFoundException('날씨 정보가 없습니다');
+    }
+
+    const { fcstDate, fcstTime, POP, PTY, REH, SKY, TMP, WSD } = weatherInfos;
+    const date = fcstDate;
+    const hour = fcstTime;
+    const precipPercent = POP;
+    const precipType = await this.getPtyType(PTY);
+    const humidity = REH;
+    const sky = await this.getSkyType(SKY);
+    const hourlyTemp = TMP;
+    const windSpeed = WSD;
+    return { date, hour, precipPercent, precipType, humidity, sky, hourlyTemp, windSpeed };
+  }
+
+  private async getSkyType(sky: string) {
+    if (sky === '1') {
+      return SkyType.clear;
+    } else if (sky === '3') {
+      return SkyType.mostlyCloudy;
+    } else if (sky === '4') {
+      return SkyType.cloudy;
+    } else {
+      return 'No Provided';
+    }
+  }
+
+  private async getPtyType(pty: string) {
+    if (pty === '0') {
+      return PtyType.dry;
+    } else if (pty === '1') {
+      return PtyType.rain;
+    } else if (pty === '2') {
+      return PtyType.sleet;
+    } else if (pty === '3') {
+      return PtyType.snow;
+    } else if (pty === '4') {
+      return PtyType.shower;
+    } else {
+      return 'No Provided';
     }
   }
 

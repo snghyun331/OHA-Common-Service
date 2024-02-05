@@ -1,4 +1,4 @@
-import { Controller, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiDescription, ApiTagWeather } from 'src/utils/decorators';
 import { WeathersService } from './weather.service';
 import { TransactionInterceptor } from 'src/interceptors/transaction.interceptor';
@@ -18,5 +18,11 @@ export class WeathersController {
   async insertWeathers(@TransactionManager() transactionManager): Promise<{ message: string }> {
     await this.weathersService.insertWeather(transactionManager);
     return { message: '성공' };
+  }
+
+  @Post('datas')
+  async getWeatherDatas(@Body() dto: GetDataDto): Promise<{ message: string; result: any }> {
+    const result = await this.weathersService.getDatas(dto);
+    return { message: '성공', result };
   }
 }

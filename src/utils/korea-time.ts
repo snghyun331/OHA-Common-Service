@@ -16,7 +16,6 @@ export class KoreaDate {
   getFullTime() {
     const fullDateString = this.koreanDateTime.toISOString();
     const time = fullDateString.substring(fullDateString.indexOf('T') + 1, fullDateString.indexOf('T') + 6);
-    const refinedTime = time.split(':').join('');
-    return refinedTime;
+    return time;
   }
 }
