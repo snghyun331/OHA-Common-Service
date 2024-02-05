@@ -10,4 +10,7 @@ export class FreqDistrictEntity {
 
   @Column({ type: 'numeric', nullable: false })
   userId: number;
+
+  @Column({ type: 'boolean', default: false, nullable: false })
+  isDefault: boolean;
 }

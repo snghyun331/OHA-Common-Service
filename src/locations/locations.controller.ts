@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -18,6 +19,7 @@ import {
   ApiResponseErrorBadRequest,
   ApiResponseErrorConflict,
   ApiResponseErrorNotFound,
+  ApiResponseErrorServer,
   ApiResponseSuccess,
   ApiTagLocation,
 } from 'src/utils/decorators';
@@ -29,6 +31,7 @@ import { TransactionManager } from 'src/utils/decorators/transaction.decorator';
 import { GetUserId } from 'src/utils/decorators/get-user.decorator';
 import { CreateFreqDistrictDto } from './dto/create-freq-district.dto';
 import { DeleteFreqDistrictDto } from './dto/delete-freq-district.dto';
+import { UpdateDefaultDistrictDto } from './dto/update-default-district.dto';
 
 @ApiTagLocation()
 @Controller('api/common/location')
@@ -127,5 +130,24 @@ export class LocationsController {
   ): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.deleteFreqDistrict(userId, dto, transactionManager);
     return { message: '성공적으로 지역이 삭제되었습니다', result };
+  }
+
+  @ApiDescription('디폴트 지역 변경')
+  @ApiBearerAuthAccessToken()
+  @ApiResponseSuccess()
+  @ApiResponseErrorBadRequest('디폴트 설정 및 해제가 실패')
+  @ApiResponseErrorConflict('해당 지역은 이미 디폴트 되어있음')
+  @ApiResponseErrorNotFound('디폴트로 설정하고자 하는 지역이 자주 가는 지역 목록에 있지 않음')
+  @ApiResponseErrorServer('알 수 없는 오류,  데이터 정합성이 훼손되어 DB 수정 필요 - Default인 지역이 없음')
+  @UseInterceptors(TransactionInterceptor)
+  @UseGuards(JwtAuthGuard)
+  @Put('default')
+  async updateDefaultDistrict(
+    @GetUserId() userId: number,
+    @TransactionManager() transactionManager,
+    @Body() dto: UpdateDefaultDistrictDto,
+  ): Promise<{ message: string }> {
+    await this.locationsService.updateDefaultDistrict(userId, dto, transactionManager);
+    return { message: '성공적으로 디폴트 설정이 완료되었습니다' };
   }
 }

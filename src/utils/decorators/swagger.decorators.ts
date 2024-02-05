@@ -34,3 +34,5 @@ export const ApiResponseErrorUnauthorized = (des: string) => ApiResponse({ statu
 export const ApiResponseErrorNotFound = (des: string) => ApiResponse({ status: 404, description: des });
 
 export const ApiResponseErrorConflict = (des: string) => ApiResponse({ status: 409, description: des });
+
+export const ApiResponseErrorServer = (des: string) => ApiResponse({ status: 500, description: des });

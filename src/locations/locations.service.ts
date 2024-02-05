@@ -3,6 +3,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   Logger,
   LoggerService,
   NotFoundException,
@@ -15,6 +16,7 @@ import { GetCodeDto } from './dto/get-code.dto';
 import { FreqDistrictEntity } from './entities/freq-district.entity';
 import { CreateFreqDistrictDto } from './dto/create-freq-district.dto';
 import { DeleteFreqDistrictDto } from './dto/delete-freq-district.dto';
+import { UpdateDefaultDistrictDto } from './dto/update-default-district.dto';
 
 @Injectable()
 export class LocationsService {
@@ -167,6 +169,34 @@ export class LocationsService {
       this.logger.error(e);
       throw e;
     }
+  }
+
+  async updateDefaultDistrict(userId: number, dto: UpdateDefaultDistrictDto, transaction: EntityManager) {
+    const { code } = await this.getCodeByName(dto);
+    // 현재 default로 설정되어있는 위치가 설정하고자 하는 위치랑 동일하지는 않는지 검사
+    const defaultFreq = await this.freqDistrictRepository.findOne({ where: { userId, isDefault: true } });
+    if (!defaultFreq) {
+      throw new InternalServerErrorException('데이터 정합성이 훼손되어 DB를 살퍄봐야합니다 - Default인 지역이 없음');
+    }
+    if (defaultFreq.code === code) {
+      throw new ConflictException('해당 위치는 이미 default 입니다');
+    }
+    // 검사 마쳤으면 기존 디폴트 지역을 해제
+    const defaultOffResult = await transaction.update(FreqDistrictEntity, defaultFreq.freqId, { isDefault: false });
+    if (defaultOffResult.affected !== 1) {
+      throw new BadRequestException('Default Off failed');
+    }
+    // 디폴트로 변경하고자 하는 지역이 자주가는 지역에 추가가 되어있는지 검사
+    const freqInfo = await this.freqDistrictRepository.findOne({ where: { code, userId } });
+    if (!freqInfo) {
+      throw new NotFoundException('해당 위치를 추가한 적이 없습니다.');
+    }
+    // 검사 마쳤으면 디폴트로 설정하고자 하는 지역을 디폴트로 설정
+    const defaultOnResult = await transaction.update(FreqDistrictEntity, freqInfo.freqId, { isDefault: true });
+    if (defaultOnResult.affected !== 1) {
+      throw new BadRequestException('Default On failed');
+    }
+    return;
   }
 
   private async createNewFreqDistrict(code: string, userId: number, transactionManager: EntityManager) {
