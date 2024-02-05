@@ -74,4 +74,19 @@ export class LocationsService {
       throw e;
     }
   }
+
+  async getGridByCode(code: string) {
+    try {
+      const gridsInfo = await this.districtGridRepository.findOne({ where: { code } });
+      if (!gridsInfo) {
+        throw new NotFoundException(`${code}번 코드에 대한 격자 정보가 없습니다.`);
+      }
+
+      const { nx, ny } = gridsInfo;
+      return { nx, ny };
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
 }

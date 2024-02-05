@@ -41,7 +41,7 @@ export class LocationsController {
   @Post('getnamebycodes')
   async getDistrictNameByCodes(@Body() dto: GetNameDto): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.getNameByCodes(dto);
-    return { message: '성공', result };
+    return { message: '행정구역명 리스트를 성공적으로 조회했습니다', result };
   }
 
   @ApiDescription('(법)행정동코드로 행정구역 조회')
@@ -54,5 +54,12 @@ export class LocationsController {
   async getDistrictName(@Param('code') code: string): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.getNameByCode(code);
     return { message: '행정구역명을 성공적으로 조회했습니다', result };
+  }
+
+  @ApiDescription('(법)행정동코드로 격자정보 조회')
+  @Get('getgrid/:code')
+  async getDistrictGridByCode(@Param('code') code: string): Promise<{ message: string; result: any }> {
+    const result = await this.locationsService.getGridByCode(code);
+    return { message: '성공', result };
   }
 }

@@ -4,6 +4,7 @@ import { WeathersService } from './weather.service';
 import { TransactionInterceptor } from 'src/interceptors/transaction.interceptor';
 import { TransactionManager } from 'src/utils/decorators/transaction.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { GetDataDto } from './dto/get-data.dto';
 
 @ApiTagWeather()
 @Controller('api/weather')
