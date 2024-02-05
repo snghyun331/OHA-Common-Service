@@ -4,6 +4,7 @@ import { DistrictNameEntity } from './entities/district-name.entity';
 import { Repository } from 'typeorm';
 import { GetCodeDto } from './dto/get-code.dto';
 import { GetNameDto } from './dto/get-name.dto';
+import { DistrictGridEntity } from './entities/district-grid.entity';
 
 @Injectable()
 export class LocationsService {
@@ -12,6 +13,8 @@ export class LocationsService {
     private readonly logger: LoggerService,
     @InjectRepository(DistrictNameEntity)
     private districtNameRepository: Repository<DistrictNameEntity>,
+    @InjectRepository(DistrictGridEntity)
+    private districtGridRepository: Repository<DistrictGridEntity>,
   ) {}
 
   async getNameByCode(code: string) {

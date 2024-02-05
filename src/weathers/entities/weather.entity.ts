@@ -18,20 +18,20 @@ export class WeatherEntity {
   ny: number;
 
   @Column({ type: 'varchar', nullable: false })
-  precipProb: string;
+  POP: string;
 
   @Column({ type: 'varchar', nullable: false })
-  precipType: string;
+  PTY: string;
 
   @Column({ type: 'varchar', nullable: false })
-  humidity: string;
+  REH: string;
 
   @Column({ type: 'varchar', nullable: false })
-  sky: string;
+  SKY: string;
 
   @Column({ type: 'varchar', nullable: false })
-  tempHourly: string;
+  TMP: string;
 
   @Column({ type: 'varchar', nullable: false })
-  windSpeed: string;
+  WSD: string;
 }
