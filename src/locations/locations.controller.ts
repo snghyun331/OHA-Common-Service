@@ -27,6 +27,8 @@ import { GetNameDto } from './dto/get-name.dto';
 import { TransactionInterceptor } from 'src/interceptors/transaction.interceptor';
 import { TransactionManager } from 'src/utils/decorators/transaction.decorator';
 import { GetUserId } from 'src/utils/decorators/get-user.decorator';
+import { CreateFreqDistrictDto } from './dto/create-freq-district.dto';
+import { DeleteFreqDistrictDto } from './dto/delete-freq-district.dto';
 
 @ApiTagLocation()
 @Controller('api/common/location')
@@ -90,9 +92,8 @@ export class LocationsController {
   @Post('freqdistrict')
   async createFreqDistrict(
     @TransactionManager() transactionManager,
-
     @GetUserId() userId: number,
-    @Body() dto: GetCodeDto,
+    @Body() dto: CreateFreqDistrictDto,
   ): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.createFreqDistrict(userId, dto, transactionManager);
     return { message: '자주 가는 지역 리스트에 성공적으로 추가하였습니다', result };
@@ -122,7 +123,7 @@ export class LocationsController {
   async deleteFreqDistrict(
     @GetUserId() userId: number,
     @TransactionManager() transactionManager,
-    @Body() dto: GetCodeDto,
+    @Body() dto: DeleteFreqDistrictDto,
   ): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.deleteFreqDistrict(userId, dto, transactionManager);
     return { message: '성공적으로 지역이 삭제되었습니다', result };

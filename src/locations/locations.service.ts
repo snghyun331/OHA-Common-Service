@@ -13,6 +13,8 @@ import { EntityManager, Repository } from 'typeorm';
 import { DistrictGridEntity } from './entities/district-grid.entity';
 import { GetCodeDto } from './dto/get-code.dto';
 import { FreqDistrictEntity } from './entities/freq-district.entity';
+import { CreateFreqDistrictDto } from './dto/create-freq-district.dto';
+import { DeleteFreqDistrictDto } from './dto/delete-freq-district.dto';
 
 @Injectable()
 export class LocationsService {
@@ -99,7 +101,7 @@ export class LocationsService {
     }
   }
 
-  async createFreqDistrict(userId: number, dto: GetCodeDto, transactionManager: EntityManager) {
+  async createFreqDistrict(userId: number, dto: CreateFreqDistrictDto, transactionManager: EntityManager) {
     try {
       const { code } = await this.getCodeByName(dto);
       const freqInfo = await this.freqDistrictRepository.findOne({ where: { code, userId } });
@@ -115,7 +117,7 @@ export class LocationsService {
     }
   }
 
-  async deleteFreqDistrict(userId: number, dto: GetCodeDto, transactionManager: EntityManager) {
+  async deleteFreqDistrict(userId: number, dto: DeleteFreqDistrictDto, transactionManager: EntityManager) {
     try {
       const { code } = await this.getCodeByName(dto);
       const deleteResult = await transactionManager.delete(FreqDistrictEntity, { code, userId });
