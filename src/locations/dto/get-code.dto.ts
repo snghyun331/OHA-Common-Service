@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class GetCodeDto {
-  @ApiProperty({ example: '경기도 고양시 덕양구 화정2동' })
+  @ApiProperty({ example: '서울특별시 노원구 상계1동' })
   readonly address: string;
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ApiDescription, ApiTagWeather } from 'src/utils/decorators';
 import { WeathersService } from './weather.service';
 import { TransactionInterceptor } from 'src/interceptors/transaction.interceptor';
@@ -12,7 +12,7 @@ export class WeathersController {
   constructor(private readonly weathersService: WeathersService) {}
 
   // @UseGuards(JwtAuthGuard)
-  @ApiDescription('구현 중')
+  @ApiDescription('기상청날씨를 DB에 Insert')
   @UseInterceptors(TransactionInterceptor)
   @Post('insert')
   async insertWeathers(@TransactionManager() transactionManager): Promise<{ message: string }> {
@@ -20,6 +20,8 @@ export class WeathersController {
     return { message: '성공' };
   }
 
+  @ApiDescription('격자로 날씨 정보 조회')
+  @HttpCode(HttpStatus.OK)
   @Post('datas')
   async getWeatherDatas(@Body() dto: GetDataDto): Promise<{ message: string; result: any }> {
     const result = await this.weathersService.getDatas(dto);

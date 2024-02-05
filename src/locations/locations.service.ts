@@ -1,10 +1,18 @@
-import { BadRequestException, Inject, Injectable, Logger, LoggerService, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  Logger,
+  LoggerService,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DistrictNameEntity } from './entities/district-name.entity';
-import { Repository } from 'typeorm';
-import { GetCodeDto } from './dto/get-code.dto';
-import { GetNameDto } from './dto/get-name.dto';
+import { EntityManager, Repository } from 'typeorm';
 import { DistrictGridEntity } from './entities/district-grid.entity';
+import { GetCodeDto } from './dto/get-code.dto';
+import { FreqDistrictEntity } from './entities/freq-district.entity';
 
 @Injectable()
 export class LocationsService {
@@ -15,6 +23,8 @@ export class LocationsService {
     private districtNameRepository: Repository<DistrictNameEntity>,
     @InjectRepository(DistrictGridEntity)
     private districtGridRepository: Repository<DistrictGridEntity>,
+    @InjectRepository(FreqDistrictEntity)
+    private freqDistrictRepository: Repository<FreqDistrictEntity>,
   ) {}
 
   async getNameByCode(code: string) {
@@ -54,9 +64,8 @@ export class LocationsService {
     }
   }
 
-  async getNameByCodes(dto: GetNameDto) {
+  async getNameByCodes(codes) {
     try {
-      const { codes } = dto;
       if (!codes || codes.length === 0) {
         throw new BadRequestException('code가 요청되지 않았습니다');
       }
@@ -88,5 +97,80 @@ export class LocationsService {
       this.logger.error(e);
       throw e;
     }
+  }
+
+  async createFreqDistrict(userId: number, dto: GetCodeDto, transactionManager: EntityManager) {
+    try {
+      const { code } = await this.getCodeByName(dto);
+      const freqInfo = await this.freqDistrictRepository.findOne({ where: { code, userId } });
+      if (freqInfo) {
+        throw new ConflictException('해당 지역을 이미 선택했습니다');
+      }
+      await this.createNewFreqDistrict(code, userId, transactionManager);
+      const allFreqDistricts = await this.getFreqDistricts(userId, transactionManager);
+      return allFreqDistricts;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
+  async deleteFreqDistrict(userId: number, dto: GetCodeDto, transactionManager: EntityManager) {
+    try {
+      const { code } = await this.getCodeByName(dto);
+      const deleteResult = await transactionManager.delete(FreqDistrictEntity, { code, userId });
+      if (deleteResult.affected === 0) {
+        throw new ConflictException('해당 지역은 이미 삭제되었습니다');
+      }
+      const allFreqDistricts = await this.getFreqDistricts(userId, transactionManager);
+      return allFreqDistricts;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
+  async getFreqDistricts(userId: number, transactionManager: EntityManager) {
+    try {
+      const results = await transactionManager.find(FreqDistrictEntity, {
+        select: { code: true },
+        where: { userId },
+      });
+      if (!results || results.length === 0) {
+        throw new NotFoundException('코드 조회 결과가 없습니다');
+      }
+      const codes = results.map((result) => result.code);
+
+      const districtNames = await this.getNameByCodes(codes);
+      const result = districtNames.reduce((acc, item) => {
+        const { firstAddress, secondAddress, thirdAddress } = item;
+
+        // 1단계: 주소 정보 가져오기
+        const firstLevel = acc[firstAddress] || {};
+        const secondLevel = firstLevel[secondAddress] || [];
+
+        // 2단계: 주소 정보 추가
+        if (thirdAddress && !secondLevel.includes(thirdAddress)) {
+          secondLevel.push(thirdAddress);
+        }
+
+        // 결과 데이터 갱신
+        firstLevel[secondAddress] = secondLevel;
+        acc[firstAddress] = firstLevel;
+
+        return acc;
+      }, {});
+      return result;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
+  private async createNewFreqDistrict(code: string, userId: number, transactionManager: EntityManager) {
+    const newFreqDistrict = new FreqDistrictEntity();
+    newFreqDistrict.code = code;
+    newFreqDistrict.userId = userId;
+    return await transactionManager.save(newFreqDistrict);
   }
 }

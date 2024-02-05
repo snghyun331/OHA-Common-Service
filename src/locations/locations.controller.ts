@@ -1,10 +1,22 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { LocationsService } from './locations.service';
 import {
   ApiBearerAuthAccessToken,
   ApiDescription,
   ApiParamDescription,
   ApiResponseErrorBadRequest,
+  ApiResponseErrorConflict,
   ApiResponseErrorNotFound,
   ApiResponseSuccess,
   ApiTagLocation,
@@ -12,6 +24,9 @@ import {
 import { GetCodeDto } from './dto/get-code.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { GetNameDto } from './dto/get-name.dto';
+import { TransactionInterceptor } from 'src/interceptors/transaction.interceptor';
+import { TransactionManager } from 'src/utils/decorators/transaction.decorator';
+import { GetUserId } from 'src/utils/decorators/get-user.decorator';
 
 @ApiTagLocation()
 @Controller('api/common/location')
@@ -40,7 +55,8 @@ export class LocationsController {
   @UseGuards(JwtAuthGuard)
   @Post('getnamebycodes')
   async getDistrictNameByCodes(@Body() dto: GetNameDto): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.getNameByCodes(dto);
+    const { codes } = dto;
+    const result = await this.locationsService.getNameByCodes(codes);
     return { message: '행정구역명 리스트를 성공적으로 조회했습니다', result };
   }
 
@@ -57,9 +73,58 @@ export class LocationsController {
   }
 
   @ApiDescription('(법)행정동코드로 격자정보 조회')
+  @ApiBearerAuthAccessToken()
+  @ApiParamDescription('code', '숫자로 입력해주세요')
+  @UseGuards(JwtAuthGuard)
   @Get('getgrid/:code')
   async getDistrictGridByCode(@Param('code') code: string): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.getGridByCode(code);
     return { message: '성공', result };
+  }
+
+  @ApiDescription('자주 가는 지역 추가')
+  @ApiBearerAuthAccessToken()
+  @ApiResponseErrorConflict('해당 지역을 이미 선택')
+  @UseInterceptors(TransactionInterceptor)
+  @UseGuards(JwtAuthGuard)
+  @Post('freqdistrict')
+  async createFreqDistrict(
+    @TransactionManager() transactionManager,
+
+    @GetUserId() userId: number,
+    @Body() dto: GetCodeDto,
+  ): Promise<{ message: string; result: any }> {
+    const result = await this.locationsService.createFreqDistrict(userId, dto, transactionManager);
+    return { message: '자주 가는 지역 리스트에 성공적으로 추가하였습니다', result };
+  }
+
+  @ApiDescription('자주 가는 지역 모두 조회')
+  @ApiBearerAuthAccessToken()
+  @ApiResponseErrorNotFound('코드 조회 결과가 없음')
+  @UseInterceptors(TransactionInterceptor)
+  @UseGuards(JwtAuthGuard)
+  @Get('freqdistrict')
+  async getFreqDistricts(
+    @GetUserId() userId: number,
+    @TransactionManager() transactionManager,
+  ): Promise<{ message: string; result: any }> {
+    const result = await this.locationsService.getFreqDistricts(userId, transactionManager);
+    return { message: '자주 가는 지역 정보를 성공적으로 불러왔습니다', result };
+  }
+
+  @ApiDescription('자주 가는 지역 삭제')
+  @ApiBearerAuthAccessToken()
+  @ApiResponseSuccess()
+  @ApiResponseErrorConflict('이미 지역 삭제')
+  @UseInterceptors(TransactionInterceptor)
+  @UseGuards(JwtAuthGuard)
+  @Delete('freqdistrict')
+  async deleteFreqDistrict(
+    @GetUserId() userId: number,
+    @TransactionManager() transactionManager,
+    @Body() dto: GetCodeDto,
+  ): Promise<{ message: string; result: any }> {
+    const result = await this.locationsService.deleteFreqDistrict(userId, dto, transactionManager);
+    return { message: '성공적으로 지역이 삭제되었습니다', result };
   }
 }
