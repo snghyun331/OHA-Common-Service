@@ -1,11 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  LoggerService,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, Logger, LoggerService, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WeatherEntity } from './entities/weather.entity';
 import { EntityManager, Repository } from 'typeorm';
@@ -14,9 +7,10 @@ import { lastValueFrom } from 'rxjs';
 import { NUM_OF_ROWS, PAGE_NO } from 'src/utils/constant';
 import { KoreaDate } from 'src/utils/korea-time';
 import { AvailableGrids } from 'src/utils/available-grids';
-import { GetDataDto } from './dto/get-data.dto';
 import { SkyType } from './enums/sky.enum';
 import { PtyType } from './enums/pty.enum';
+import { FreqDistrictEntity } from 'src/locations/entities/freq-district.entity';
+import { LocationsService } from 'src/locations/locations.service';
 
 @Injectable()
 export class WeathersService {
@@ -25,7 +19,10 @@ export class WeathersService {
     private readonly logger: LoggerService,
     @InjectRepository(WeatherEntity)
     private weatherRepository: Repository<WeatherEntity>,
+    @InjectRepository(FreqDistrictEntity)
+    private freqDistrictRepository: Repository<FreqDistrictEntity>,
     private readonly httpService: HttpService,
+    private locationsService: LocationsService,
   ) {}
 
   async insertWeather(transactionManager: EntityManager) {
@@ -81,13 +78,18 @@ export class WeathersService {
     }
   }
 
-  async getDatas(dto: GetDataDto) {
-    const { nx, ny } = dto;
+  async getWeatherDatas(userId: number) {
+    const { code } = await this.freqDistrictRepository.findOne({
+      select: { code: true },
+      where: { userId, isDefault: true },
+    });
+    if (!code) {
+      throw new NotFoundException('default인 지역이 없습니다');
+    }
+    const { nx, ny } = await this.locationsService.getGridByCode(code);
     const koreaFullDate = new KoreaDate();
-    // const currentDate = koreaFullDate.getFullDate();
-    // const currentHour = koreaFullDate.getFullTime().slice(0, 2);
-    const currentDate = '20240205';
-    const currentHour = '17';
+    const currentDate = koreaFullDate.getFullDate();
+    const currentHour = koreaFullDate.getFullTime().slice(0, 2);
     const weatherInfos = await this.weatherRepository.findOne({
       where: { fcstDate: currentDate, fcstTime: currentHour + '00', nx, ny },
     });
