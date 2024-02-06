@@ -68,7 +68,7 @@ export class LocationsService {
 
   async getNameByCodes(codes) {
     try {
-      if (!codes || codes.length === 0) {
+      if (!codes) {
         throw new BadRequestException('code가 요청되지 않았습니다');
       }
       const promises = codes.map(async (code) => {
@@ -141,7 +141,7 @@ export class LocationsService {
         select: { code: true },
         where: { userId },
       });
-      if (!results || results.length === 0) {
+      if (!results) {
         throw new NotFoundException('코드 조회 결과가 없습니다');
       }
       const codes = results.map((result) => result.code);
