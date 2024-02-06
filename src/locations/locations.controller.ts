@@ -47,7 +47,8 @@ export class LocationsController {
   @UseGuards(JwtAuthGuard)
   @Post('getcode')
   async getDistrictCode(@Body() dto: GetCodeDto): Promise<{ message: string; result: any }> {
-    const code = await this.locationsService.getCodeByName(dto);
+    const { address } = dto;
+    const code = await this.locationsService.getCodeByName(address);
     return { message: 'code를 성공적으로 가져왔습니다', result: code };
   }
 

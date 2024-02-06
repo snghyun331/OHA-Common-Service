@@ -12,7 +12,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DistrictNameEntity } from './entities/district-name.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { DistrictGridEntity } from './entities/district-grid.entity';
-import { GetCodeDto } from './dto/get-code.dto';
 import { FreqDistrictEntity } from './entities/freq-district.entity';
 import { CreateFreqDistrictDto } from './dto/create-freq-district.dto';
 import { DeleteFreqDistrictDto } from './dto/delete-freq-district.dto';
@@ -44,9 +43,8 @@ export class LocationsService {
     }
   }
 
-  async getCodeByName(dto: GetCodeDto) {
+  async getCodeByName(address: string) {
     try {
-      const { address } = dto;
       if (!address) {
         throw new BadRequestException('address를 입력해주세요');
       }
@@ -105,12 +103,14 @@ export class LocationsService {
 
   async createFreqDistrict(userId: number, dto: CreateFreqDistrictDto, transactionManager: EntityManager) {
     try {
-      const { code } = await this.getCodeByName(dto);
+      const { address, isDefault } = dto;
+      const { code } = await this.getCodeByName(address);
       const freqInfo = await this.freqDistrictRepository.findOne({ where: { code, userId } });
       if (freqInfo) {
         throw new ConflictException('해당 지역을 이미 선택했습니다');
       }
-      await this.createNewFreqDistrict(code, userId, transactionManager);
+      const properties = { code, userId, isDefault };
+      await this.createNewFreqDistrict(properties, transactionManager);
       const allFreqDistricts = await this.getFreqDistricts(userId, transactionManager);
       return allFreqDistricts;
     } catch (e) {
@@ -121,7 +121,8 @@ export class LocationsService {
 
   async deleteFreqDistrict(userId: number, dto: DeleteFreqDistrictDto, transactionManager: EntityManager) {
     try {
-      const { code } = await this.getCodeByName(dto);
+      const { address } = dto;
+      const { code } = await this.getCodeByName(address);
       const deleteResult = await transactionManager.delete(FreqDistrictEntity, { code, userId });
       if (deleteResult.affected === 0) {
         throw new ConflictException('해당 지역은 이미 삭제되었습니다');
@@ -172,7 +173,8 @@ export class LocationsService {
   }
 
   async updateDefaultDistrict(userId: number, dto: UpdateDefaultDistrictDto, transaction: EntityManager) {
-    const { code } = await this.getCodeByName(dto);
+    const { address } = dto;
+    const { code } = await this.getCodeByName(address);
     // 현재 default로 설정되어있는 위치가 설정하고자 하는 위치랑 동일하지는 않는지 검사
     const defaultFreq = await this.freqDistrictRepository.findOne({ where: { userId, isDefault: true } });
     if (!defaultFreq) {
@@ -199,10 +201,14 @@ export class LocationsService {
     return;
   }
 
-  private async createNewFreqDistrict(code: string, userId: number, transactionManager: EntityManager) {
+  private async createNewFreqDistrict(properties, transactionManager: EntityManager) {
+    const { code, userId, isDefault } = properties;
     const newFreqDistrict = new FreqDistrictEntity();
     newFreqDistrict.code = code;
     newFreqDistrict.userId = userId;
+    if (isDefault === true) {
+      newFreqDistrict.isDefault = isDefault;
+    }
     return await transactionManager.save(newFreqDistrict);
   }
 }
