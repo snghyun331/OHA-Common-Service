@@ -17,8 +17,9 @@ import { GetUserId } from 'src/utils/decorators/get-user.decorator';
 export class WeathersController {
   constructor(private readonly weathersService: WeathersService) {}
 
-  // @UseGuards(JwtAuthGuard)
   @ApiDescription('기상청날씨를 DB에 Insert')
+  @ApiBearerAuthAccessToken()
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(TransactionInterceptor)
   @Post('insert')
   async insertWeathers(@TransactionManager() transactionManager): Promise<{ message: string }> {
