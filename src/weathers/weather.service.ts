@@ -33,7 +33,7 @@ export class WeathersService {
       const baseDate = koreaFullDate.getFullDate();
 
       let baseTime;
-      if (koreaFullDate.getFullTime().slice(0, 2) == '17') {
+      if (parseInt(koreaFullDate.getFullTime().slice(0, 2), 10) >= 17) {
         baseTime = '1700';
       } else {
         baseTime = '0500';
@@ -41,18 +41,19 @@ export class WeathersService {
 
       const grids = AvailableGrids;
 
-      for (const grid of grids) {
+      while (grids.length !== 0) {
+        const grid = grids.shift();
         const nx = grid.nx;
         const ny = grid.ny;
         const apiUrl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${process.env.WEATHER_KEY}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
-        console.log(apiUrl);
         const res = await lastValueFrom(this.httpService.get(apiUrl));
 
-        // 1초 대기
-        // await this.delay(1000);
+        // 0.5초 대기
+        await this.delay(500);
 
         const datas = res.data.response?.body.items.item;
         if (!datas) {
+          grids.push(grid);
           continue;
         }
         const groupedData = datas.reduce((acc, item) => {
@@ -71,6 +72,7 @@ export class WeathersService {
           await transactionManager.save(weatherData);
         }
       }
+
       return;
     } catch (e) {
       this.logger.error(e);
