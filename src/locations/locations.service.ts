@@ -207,6 +207,35 @@ export class LocationsService {
     return;
   }
 
+  async getDefaultDistrict(userId: number) {
+    try {
+      const { code } = await this.freqDistrictRepository.findOne({
+        where: { userId, isDefault: true },
+        select: { code: true },
+      });
+      if (!code) {
+        throw new NotFoundException('default 지역이 없습니다');
+      }
+      const result = await this.getNameByCode(code);
+      return result;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
+  async getSameGridDistricts(code: string) {
+    try {
+      const { nx, ny } = await this.getGridByCode(code);
+      const results = await this.districtGridRepository.find({ where: { nx, ny }, select: { code: true } });
+      const codes = results.map((result) => result.code);
+      return codes;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
   private async createNewFreqDistrict(properties, transactionManager: EntityManager) {
     const { code, userId, isDefault } = properties;
     const newFreqDistrict = new FreqDistrictEntity();

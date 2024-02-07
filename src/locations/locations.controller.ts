@@ -151,4 +151,25 @@ export class LocationsController {
     await this.locationsService.updateDefaultDistrict(userId, dto, transactionManager);
     return { message: '성공적으로 디폴트 설정이 완료되었습니다' };
   }
+
+  @ApiDescription('사용자가 디폴트로 설정한 지역 조회')
+  @ApiBearerAuthAccessToken()
+  @ApiResponseSuccess()
+  @ApiResponseErrorNotFound('default 지역이 없음')
+  @UseGuards(JwtAuthGuard)
+  @Get('default')
+  async getDefaultDistrict(@GetUserId() userId: number): Promise<{ message: string; result: any }> {
+    const result = await this.locationsService.getDefaultDistrict(userId);
+    return { message: '성공적으로 디폴트 지역을 가져왔습니다', result };
+  }
+
+  @ApiDescription('현재 주소와 동일한 격자를 갖는 지역들 조회 (code반환)')
+  @ApiBearerAuthAccessToken()
+  @ApiResponseSuccess()
+  @UseGuards(JwtAuthGuard)
+  @Get('samegrid/:code')
+  async getSameGridDistricts(@Param('code') code: string): Promise<{ message: string; result: any }> {
+    const result = await this.locationsService.getSameGridDistricts(code);
+    return { message: '성공', result };
+  }
 }
