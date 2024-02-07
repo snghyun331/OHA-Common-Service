@@ -13,7 +13,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { GetUserId } from 'src/utils/decorators/get-user.decorator';
 
 @ApiTagWeather()
-@Controller('api/weather')
+@Controller('api/common/weather')
 export class WeathersController {
   constructor(private readonly weathersService: WeathersService) {}
 
