@@ -103,8 +103,14 @@ export class LocationsService {
 
   async createFreqDistrict(userId: number, dto: CreateFreqDistrictDto, transactionManager: EntityManager) {
     try {
-      const { address, isDefault } = dto;
+      const { address } = dto;
       const { code } = await this.getCodeByName(address);
+      // 사용자의 자주가는 지역 목록이 없다면, 맨 처음 추가하는 지역을 자동으로 default로 설정
+      const checkIfNothing = await this.freqDistrictRepository.find({ where: { userId } });
+      let isDefault;
+      if (checkIfNothing.length === 0) {
+        isDefault = true;
+      }
       const freqInfo = await this.freqDistrictRepository.findOne({ where: { code, userId } });
       if (freqInfo) {
         throw new ConflictException('해당 지역을 이미 선택했습니다');
