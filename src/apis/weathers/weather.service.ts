@@ -9,8 +9,8 @@ import { KoreaDate } from 'src/utils/korea-time';
 import { AvailableGrids } from 'src/utils/available-grids';
 import { SkyType } from './enums/sky.enum';
 import { PtyType } from './enums/pty.enum';
-import { FreqDistrictEntity } from 'src/locations/entities/freq-district.entity';
-import { LocationsService } from 'src/locations/locations.service';
+import { FreqDistrictEntity } from '../locations/entities/freq-district.entity';
+import { LocationsService } from '../locations/locations.service';
 
 @Injectable()
 export class WeathersService {

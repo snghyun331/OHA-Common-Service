@@ -6,10 +6,10 @@ import { WeatherEntity } from './entities/weather.entity';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TaskService } from './task.service';
 import { HttpModule } from '@nestjs/axios';
-import { LocationsService } from 'src/locations/locations.service';
-import { DistrictGridEntity } from 'src/locations/entities/district-grid.entity';
-import { FreqDistrictEntity } from 'src/locations/entities/freq-district.entity';
-import { DistrictNameEntity } from 'src/locations/entities/district-name.entity';
+import { LocationsService } from '../locations/locations.service';
+import { DistrictGridEntity } from '../locations/entities/district-grid.entity';
+import { FreqDistrictEntity } from '../locations/entities/freq-district.entity';
+import { DistrictNameEntity } from '../locations/entities/district-name.entity';
 
 @Module({
   imports: [
