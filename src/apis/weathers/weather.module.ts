@@ -10,10 +10,17 @@ import { LocationsService } from '../locations/locations.service';
 import { DistrictGridEntity } from '../locations/entities/district-grid.entity';
 import { FreqDistrictEntity } from '../locations/entities/freq-district.entity';
 import { DistrictNameEntity } from '../locations/entities/district-name.entity';
+import { DistrictXYEntity } from '../locations/entities/district-xy.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([WeatherEntity, DistrictGridEntity, FreqDistrictEntity, DistrictNameEntity]),
+    TypeOrmModule.forFeature([
+      WeatherEntity,
+      DistrictGridEntity,
+      FreqDistrictEntity,
+      DistrictNameEntity,
+      DistrictXYEntity,
+    ]),
     ScheduleModule.forRoot(),
     HttpModule.register({}),
   ],

@@ -32,6 +32,7 @@ import { GetUserId } from 'src/utils/decorators/get-user.decorator';
 import { CreateFreqDistrictDto } from './dto/create-freq-district.dto';
 import { DeleteFreqDistrictDto } from './dto/delete-freq-district.dto';
 import { UpdateDefaultDistrictDto } from './dto/update-default-district.dto';
+import { CurrentCoordinateDto } from './dto/current-coordinate.dto';
 
 @ApiTagLocation()
 @Controller('api/common/location')
@@ -171,5 +172,17 @@ export class LocationsController {
   async getSameGridDistricts(@Param('code') code: string): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.getSameGridDistricts(code);
     return { message: '성공', result };
+  }
+
+  @ApiDescription('사용자 근처 지역 리스트 조회')
+  @ApiBearerAuthAccessToken()
+  @ApiResponseSuccess()
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @Post('neardistricts')
+  async getNearDistricts(@Body() dto: CurrentCoordinateDto): Promise<{ message: string; result: any }> {
+    const result = await this.locationsService.getNearDistricts(dto);
+
+    return { message: '성공적으로 근처 지역 리스트를 불러왔습니다', result };
   }
 }

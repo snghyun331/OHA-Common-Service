@@ -16,6 +16,8 @@ import { FreqDistrictEntity } from './entities/freq-district.entity';
 import { CreateFreqDistrictDto } from './dto/create-freq-district.dto';
 import { DeleteFreqDistrictDto } from './dto/delete-freq-district.dto';
 import { UpdateDefaultDistrictDto } from './dto/update-default-district.dto';
+import { CurrentCoordinateDto } from './dto/current-coordinate.dto';
+import { DistrictXYEntity } from './entities/district-xy.entity';
 
 @Injectable()
 export class LocationsService {
@@ -28,6 +30,8 @@ export class LocationsService {
     private districtGridRepository: Repository<DistrictGridEntity>,
     @InjectRepository(FreqDistrictEntity)
     private freqDistrictRepository: Repository<FreqDistrictEntity>,
+    @InjectRepository(DistrictXYEntity)
+    private districtXYRepository: Repository<DistrictXYEntity>,
   ) {}
 
   async getNameByCode(code: string) {
@@ -244,6 +248,49 @@ export class LocationsService {
       this.logger.error(e);
       throw e;
     }
+  }
+
+  async getNearDistricts(currentCoordinate: CurrentCoordinateDto) {
+    try {
+      const allDistricts = await this.districtXYRepository.find({
+        select: { code: true, longitude: true, latitude: true },
+      });
+      const sortedDistricts = [...allDistricts];
+
+      sortedDistricts.sort((a, b) => {
+        const distanceA = this.calculateDistance(currentCoordinate, a);
+        const distanceB = this.calculateDistance(currentCoordinate, b);
+        return distanceA - distanceB;
+      });
+
+      const slicedSortedDistricts = sortedDistricts.slice(0, 30);
+      const codes = slicedSortedDistricts.map((slicedSortedDistrict) => slicedSortedDistrict.code);
+      const districtNames = await this.getNameByCodes(codes);
+
+      return districtNames;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
+  private calculateDistance(coord1, coord2) {
+    const earthRadiusKm = 6371;
+
+    const lat1 = this.degreesToRadians(coord1.latitude);
+    const lat2 = this.degreesToRadians(coord2.latitude);
+    const deltaLat = this.degreesToRadians(coord2.latitude - coord1.latitude);
+    const deltaLng = this.degreesToRadians(coord2.longitude - coord1.longitude);
+    const a =
+      Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return earthRadiusKm * c;
+  }
+
+  private degreesToRadians(degrees: number) {
+    return degrees * (Math.PI / 100);
   }
 
   private async createNewFreqDistrict(properties, transactionManager: EntityManager) {
