@@ -133,6 +133,16 @@ export class LocationsService {
       if (deleteResult.affected === 0) {
         throw new ConflictException('해당 지역은 이미 삭제되었습니다');
       }
+      // 만약 디폴트로 설정된 지역이 없다면, 나머지 지역 중 하나를 자동으로 default으로 설정
+      const checkIfDefaultExist = await transactionManager.findOne(FreqDistrictEntity, {
+        where: { userId, isDefault: true },
+      });
+      if (!checkIfDefaultExist) {
+        const getOneFreqDistrict = await transactionManager.findOne(FreqDistrictEntity, { where: { userId } });
+        const freqId = getOneFreqDistrict.freqId;
+        await transactionManager.update(FreqDistrictEntity, freqId, { isDefault: true });
+      }
+
       const allFreqDistricts = await this.getFreqDistricts(userId, transactionManager);
       return allFreqDistricts;
     } catch (e) {
