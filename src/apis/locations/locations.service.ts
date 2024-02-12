@@ -16,6 +16,9 @@ import { FreqDistrictEntity } from './entities/freq-district.entity';
 import { CreateFreqDistrictDto } from './dto/create-freq-district.dto';
 import { DeleteFreqDistrictDto } from './dto/delete-freq-district.dto';
 import { UpdateDefaultDistrictDto } from './dto/update-default-district.dto';
+import { CurrentCoordinateDto } from './dto/current-coordinate.dto';
+import { DistrictXYEntity } from './entities/district-xy.entity';
+import { calculateDistance } from 'src/utils/calculate-distance';
 
 @Injectable()
 export class LocationsService {
@@ -28,6 +31,8 @@ export class LocationsService {
     private districtGridRepository: Repository<DistrictGridEntity>,
     @InjectRepository(FreqDistrictEntity)
     private freqDistrictRepository: Repository<FreqDistrictEntity>,
+    @InjectRepository(DistrictXYEntity)
+    private districtXYRepository: Repository<DistrictXYEntity>,
   ) {}
 
   async getNameByCode(code: string) {
@@ -133,6 +138,16 @@ export class LocationsService {
       if (deleteResult.affected === 0) {
         throw new ConflictException('해당 지역은 이미 삭제되었습니다');
       }
+      // 만약 디폴트로 설정된 지역이 없다면, 나머지 지역 중 하나를 자동으로 default으로 설정
+      const checkIfDefaultExist = await transactionManager.findOne(FreqDistrictEntity, {
+        where: { userId, isDefault: true },
+      });
+      if (!checkIfDefaultExist) {
+        const getOneFreqDistrict = await transactionManager.findOne(FreqDistrictEntity, { where: { userId } });
+        const freqId = getOneFreqDistrict.freqId;
+        await transactionManager.update(FreqDistrictEntity, freqId, { isDefault: true });
+      }
+
       const allFreqDistricts = await this.getFreqDistricts(userId, transactionManager);
       return allFreqDistricts;
     } catch (e) {
@@ -228,8 +243,39 @@ export class LocationsService {
     try {
       const { nx, ny } = await this.getGridByCode(code);
       const results = await this.districtGridRepository.find({ where: { nx, ny }, select: { code: true } });
+      if (results.length === 0) {
+        return results;
+      }
       const codes = results.map((result) => result.code);
-      return codes;
+      const result = await this.getNameByCodes(codes);
+      return result;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
+  async getNearDistricts(currentCoordinate: CurrentCoordinateDto) {
+    try {
+      const allDistricts = await this.districtXYRepository.find({
+        select: { code: true, longitude: true, latitude: true },
+      });
+      const sortedDistricts = [...allDistricts];
+
+      sortedDistricts.sort((a, b) => {
+        const distanceA = calculateDistance(currentCoordinate, a);
+        const distanceB = calculateDistance(currentCoordinate, b);
+        return distanceA - distanceB;
+      });
+
+      const slicedSortedDistricts = sortedDistricts.slice(0, 30);
+      const codes = slicedSortedDistricts.map((slicedSortedDistrict) => slicedSortedDistrict.code);
+      const districtNames = await this.getNameByCodes(codes);
+      const fullAddress = districtNames.map(
+        (districtName) => `${districtName.firstAddress} ${districtName.secondAddress} ${districtName.thirdAddress}`,
+      );
+
+      return fullAddress;
     } catch (e) {
       this.logger.error(e);
       throw e;

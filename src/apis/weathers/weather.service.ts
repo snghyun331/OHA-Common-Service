@@ -5,12 +5,12 @@ import { EntityManager, Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { NUM_OF_ROWS, PAGE_NO } from 'src/utils/constant';
-import { KoreaDate } from 'src/utils/korea-time';
+import { KoreaDate } from 'src/utils/calculate-kst';
 import { AvailableGrids } from 'src/utils/available-grids';
 import { SkyType } from './enums/sky.enum';
 import { PtyType } from './enums/pty.enum';
-import { FreqDistrictEntity } from 'src/locations/entities/freq-district.entity';
-import { LocationsService } from 'src/locations/locations.service';
+import { FreqDistrictEntity } from '../locations/entities/freq-district.entity';
+import { LocationsService } from '../locations/locations.service';
 
 @Injectable()
 export class WeathersService {
