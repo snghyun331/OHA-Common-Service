@@ -171,7 +171,7 @@ export class LocationsController {
   @Get('samegrid/:code')
   async getSameGridDistricts(@Param('code') code: string): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.getSameGridDistricts(code);
-    return { message: '성공', result };
+    return { message: '성공적으로 불러왔습니다', result };
   }
 
   @ApiDescription('사용자 근처 지역 리스트 조회')
@@ -182,7 +182,6 @@ export class LocationsController {
   @Post('neardistricts')
   async getNearDistricts(@Body() dto: CurrentCoordinateDto): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.getNearDistricts(dto);
-
     return { message: '성공적으로 근처 지역 리스트를 불러왔습니다', result };
   }
 }

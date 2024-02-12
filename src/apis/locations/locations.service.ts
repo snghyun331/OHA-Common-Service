@@ -243,7 +243,8 @@ export class LocationsService {
       const { nx, ny } = await this.getGridByCode(code);
       const results = await this.districtGridRepository.find({ where: { nx, ny }, select: { code: true } });
       const codes = results.map((result) => result.code);
-      return codes;
+      const result = await this.getNameByCodes(codes);
+      return result;
     } catch (e) {
       this.logger.error(e);
       throw e;
