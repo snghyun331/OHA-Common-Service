@@ -17,7 +17,7 @@ import { GetUserId } from 'src/utils/decorators/get-user.decorator';
 export class WeathersController {
   constructor(private readonly weathersService: WeathersService) {}
 
-  @ApiDescription('기상청날씨를 DB에 Insert')
+  @ApiDescription('기상청날씨를 DB에 Insert - Backend용')
   @ApiBearerAuthAccessToken()
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(TransactionInterceptor)

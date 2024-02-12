@@ -20,6 +20,8 @@ import {
   ApiResponseErrorConflict,
   ApiResponseErrorNotFound,
   ApiResponseErrorServer,
+  ApiResponseNearDistrictsSuccess,
+  ApiResponseSameGridSuccess,
   ApiResponseSuccess,
   ApiTagLocation,
 } from 'src/utils/decorators';
@@ -39,7 +41,7 @@ import { CurrentCoordinateDto } from './dto/current-coordinate.dto';
 export class LocationsController {
   constructor(private readonly locationsService: LocationsService) {}
 
-  @ApiDescription(' (법)행정동명으로 (법)행정코드 반환')
+  @ApiDescription(' (법)행정동명으로 (법)행정코드 반환 - Backend용')
   @ApiResponseSuccess()
   @ApiResponseErrorBadRequest('address가 요청되지 않음')
   @ApiResponseErrorNotFound('요청한 address와 일치하는 코드가 없음')
@@ -53,7 +55,7 @@ export class LocationsController {
     return { message: 'code를 성공적으로 가져왔습니다', result: code };
   }
 
-  @ApiDescription('(법)행정동코드 리스트로 행정구역 조회')
+  @ApiDescription('(법)행정동코드 리스트로 행정구역 조회 - Backend용')
   @ApiResponseSuccess()
   @ApiResponseErrorBadRequest('codes가 요청되지 않음')
   @ApiResponseErrorNotFound('요청한 code와 일치하지 않는 (법)행정동명이 있음')
@@ -67,7 +69,7 @@ export class LocationsController {
     return { message: '행정구역명 리스트를 성공적으로 조회했습니다', result };
   }
 
-  @ApiDescription('(법)행정동코드로 행정구역 조회')
+  @ApiDescription('(법)행정동코드로 행정구역 조회 - Backend용')
   @ApiResponseSuccess()
   @ApiResponseErrorNotFound('지원 혹은 존재하지 않는 코드')
   @ApiParamDescription('code', '숫자로 입력해주세요')
@@ -79,7 +81,7 @@ export class LocationsController {
     return { message: '행정구역명을 성공적으로 조회했습니다', result };
   }
 
-  @ApiDescription('(법)행정동코드로 격자정보 조회')
+  @ApiDescription('(법)행정동코드로 격자정보 조회 - Backend용')
   @ApiBearerAuthAccessToken()
   @ApiParamDescription('code', '숫자로 입력해주세요')
   @UseGuards(JwtAuthGuard)
@@ -87,6 +89,17 @@ export class LocationsController {
   async getDistrictGridByCode(@Param('code') code: string): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.getGridByCode(code);
     return { message: '성공', result };
+  }
+
+  @ApiDescription('현재 주소와 동일한 격자를 갖는 지역들 조회 - Backend용', '코드와 행정구역명 모두 출력됩니다.')
+  @ApiBearerAuthAccessToken()
+  @ApiParamDescription('code', '숫자로 입력해주세요')
+  @ApiResponseSameGridSuccess()
+  @UseGuards(JwtAuthGuard)
+  @Get('samegrid/:code')
+  async getSameGridDistricts(@Param('code') code: string): Promise<{ message: string; result: any }> {
+    const result = await this.locationsService.getSameGridDistricts(code);
+    return { message: '성공적으로 불러왔습니다', result };
   }
 
   @ApiDescription('자주 가는 지역 추가')
@@ -164,19 +177,12 @@ export class LocationsController {
     return { message: '성공적으로 디폴트 지역을 가져왔습니다', result };
   }
 
-  @ApiDescription('현재 주소와 동일한 격자를 갖는 지역들 조회 (code반환)')
+  @ApiDescription(
+    '사용자 근처 지역 리스트 조회',
+    '현재 위치와 가장 가까운 지역부터 정렬하였으며 최대 30개 지역까지 출력됩니다.',
+  )
   @ApiBearerAuthAccessToken()
-  @ApiResponseSuccess()
-  @UseGuards(JwtAuthGuard)
-  @Get('samegrid/:code')
-  async getSameGridDistricts(@Param('code') code: string): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.getSameGridDistricts(code);
-    return { message: '성공적으로 불러왔습니다', result };
-  }
-
-  @ApiDescription('사용자 근처 지역 리스트 조회')
-  @ApiBearerAuthAccessToken()
-  @ApiResponseSuccess()
+  @ApiResponseNearDistrictsSuccess()
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @Post('neardistricts')
