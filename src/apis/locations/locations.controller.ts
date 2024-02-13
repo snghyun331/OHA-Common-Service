@@ -13,13 +13,18 @@ import {
 } from '@nestjs/common';
 import { LocationsService } from './locations.service';
 import {
+  GetUserId,
+  TransactionManager,
   ApiBearerAuthAccessToken,
+  ApiCreatedResponseFreqDistrictSuccess,
   ApiDescription,
   ApiParamDescription,
   ApiResponseErrorBadRequest,
   ApiResponseErrorConflict,
   ApiResponseErrorNotFound,
   ApiResponseErrorServer,
+  ApiResponseFreqDistrictDeleteSuccess,
+  ApiResponseFreqDistrictSuccess,
   ApiResponseNearDistrictsSuccess,
   ApiResponseSameGridSuccess,
   ApiResponseSuccess,
@@ -29,8 +34,6 @@ import { GetCodeDto } from './dto/get-code.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { GetNameDto } from './dto/get-name.dto';
 import { TransactionInterceptor } from 'src/interceptors/transaction.interceptor';
-import { TransactionManager } from 'src/utils/decorators/transaction.decorator';
-import { GetUserId } from 'src/utils/decorators/get-user.decorator';
 import { CreateFreqDistrictDto } from './dto/create-freq-district.dto';
 import { DeleteFreqDistrictDto } from './dto/delete-freq-district.dto';
 import { UpdateDefaultDistrictDto } from './dto/update-default-district.dto';
@@ -104,6 +107,8 @@ export class LocationsController {
 
   @ApiDescription('자주 가는 지역 추가')
   @ApiBearerAuthAccessToken()
+  @ApiCreatedResponseFreqDistrictSuccess()
+  @ApiResponseErrorBadRequest('요청한 address가 비어있음')
   @ApiResponseErrorConflict('해당 지역을 이미 선택')
   @UseInterceptors(TransactionInterceptor)
   @UseGuards(JwtAuthGuard)
@@ -119,7 +124,7 @@ export class LocationsController {
 
   @ApiDescription('자주 가는 지역 모두 조회')
   @ApiBearerAuthAccessToken()
-  @ApiResponseErrorNotFound('코드 조회 결과가 없음')
+  @ApiResponseFreqDistrictSuccess()
   @UseInterceptors(TransactionInterceptor)
   @UseGuards(JwtAuthGuard)
   @Get('freqdistrict')
@@ -133,7 +138,8 @@ export class LocationsController {
 
   @ApiDescription('자주 가는 지역 삭제')
   @ApiBearerAuthAccessToken()
-  @ApiResponseSuccess()
+  @ApiResponseFreqDistrictDeleteSuccess()
+  @ApiResponseErrorBadRequest('요청한 address가 비어있음')
   @ApiResponseErrorConflict('이미 지역 삭제')
   @UseInterceptors(TransactionInterceptor)
   @UseGuards(JwtAuthGuard)
@@ -150,7 +156,7 @@ export class LocationsController {
   @ApiDescription('디폴트 지역 변경')
   @ApiBearerAuthAccessToken()
   @ApiResponseSuccess()
-  @ApiResponseErrorBadRequest('디폴트 설정 및 해제가 실패')
+  @ApiResponseErrorBadRequest('요청한 address가 없거나, 디폴트 설정 및 해제가 실패')
   @ApiResponseErrorConflict('해당 지역은 이미 디폴트 되어있음')
   @ApiResponseErrorNotFound('디폴트로 설정하고자 하는 지역이 자주 가는 지역 목록에 있지 않음')
   @ApiResponseErrorServer('알 수 없는 오류,  데이터 정합성이 훼손되어 DB 수정 필요 - Default인 지역이 없음')
@@ -188,7 +194,7 @@ export class LocationsController {
   @Post('neardistricts')
   async getNearDistricts(@Body() dto: CurrentCoordinateDto): Promise<{ message: string; result: any }> {
     const result = await this.locationsService.getNearDistricts(dto);
-    return { message: '성공적으로 근처 지역 리스트를 불러왔습니다', result };
+    return { message: '성공적으로 근처 지역 30곳을 불러왔습니다', result };
   }
 
   @ApiDescription('모든 행정구역명 조회')
