@@ -144,8 +144,10 @@ export class LocationsService {
       });
       if (!checkIfDefaultExist) {
         const getOneFreqDistrict = await transactionManager.findOne(FreqDistrictEntity, { where: { userId } });
-        const freqId = getOneFreqDistrict.freqId;
-        await transactionManager.update(FreqDistrictEntity, freqId, { isDefault: true });
+        if (getOneFreqDistrict) {
+          const freqId = getOneFreqDistrict.freqId;
+          await transactionManager.update(FreqDistrictEntity, freqId, { isDefault: true });
+        }
       }
 
       const allFreqDistricts = await this.getFreqDistricts(userId, transactionManager);
@@ -158,35 +160,27 @@ export class LocationsService {
 
   async getFreqDistricts(userId: number, transactionManager: EntityManager) {
     try {
-      const results = await transactionManager.find(FreqDistrictEntity, {
-        select: { code: true },
+      const freqDistricts = await transactionManager.find(FreqDistrictEntity, {
+        select: { code: true, isDefault: true },
         where: { userId },
       });
-      if (!results) {
-        throw new NotFoundException('코드 조회 결과가 없습니다');
+
+      if (freqDistricts.length === 0) {
+        return freqDistricts;
       }
-      const codes = results.map((result) => result.code);
 
-      const districtNames = await this.getNameByCodes(codes);
-      const result = districtNames.reduce((acc, item) => {
-        const { firstAddress, secondAddress, thirdAddress } = item;
-
-        // 1단계: 주소 정보 가져오기
-        const firstLevel = acc[firstAddress] || {};
-        const secondLevel = firstLevel[secondAddress] || [];
-
-        // 2단계: 주소 정보 추가
-        if (thirdAddress && !secondLevel.includes(thirdAddress)) {
-          secondLevel.push(thirdAddress);
+      const promises = freqDistricts.map(async (freqDistrict) => {
+        const code = freqDistrict.code;
+        const isDefault = freqDistrict.isDefault;
+        const districtName = await this.districtNameRepository.findOne({ where: { code } });
+        if (!districtName) {
+          throw new NotFoundException(`code가 ${code}인 지역은 존재하지 않습니다`);
         }
+        return { ...districtName, isDefault };
+      });
+      const results = await Promise.all(promises);
 
-        // 결과 데이터 갱신
-        firstLevel[secondAddress] = secondLevel;
-        acc[firstAddress] = firstLevel;
-
-        return acc;
-      }, {});
-      return result;
+      return results;
     } catch (e) {
       this.logger.error(e);
       throw e;
