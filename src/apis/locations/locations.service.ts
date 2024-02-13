@@ -109,6 +109,9 @@ export class LocationsService {
   async createFreqDistrict(userId: number, dto: CreateFreqDistrictDto, transactionManager: EntityManager) {
     try {
       const { address } = dto;
+      if (!address || address === '') {
+        throw new BadRequestException('요청한 address가 비어있습니다');
+      }
       const { code } = await this.getCodeByName(address);
       // 사용자의 자주가는 지역 목록이 없다면, 맨 처음 추가하는 지역을 자동으로 default로 설정
       const checkIfNothing = await this.freqDistrictRepository.find({ where: { userId } });
@@ -133,6 +136,9 @@ export class LocationsService {
   async deleteFreqDistrict(userId: number, dto: DeleteFreqDistrictDto, transactionManager: EntityManager) {
     try {
       const { address } = dto;
+      if (!address || address === '') {
+        throw new BadRequestException('요청한 address가 비어있습니다');
+      }
       const { code } = await this.getCodeByName(address);
       const deleteResult = await transactionManager.delete(FreqDistrictEntity, { code, userId });
       if (deleteResult.affected === 0) {
@@ -144,8 +150,10 @@ export class LocationsService {
       });
       if (!checkIfDefaultExist) {
         const getOneFreqDistrict = await transactionManager.findOne(FreqDistrictEntity, { where: { userId } });
-        const freqId = getOneFreqDistrict.freqId;
-        await transactionManager.update(FreqDistrictEntity, freqId, { isDefault: true });
+        if (getOneFreqDistrict) {
+          const freqId = getOneFreqDistrict.freqId;
+          await transactionManager.update(FreqDistrictEntity, freqId, { isDefault: true });
+        }
       }
 
       const allFreqDistricts = await this.getFreqDistricts(userId, transactionManager);
@@ -158,35 +166,27 @@ export class LocationsService {
 
   async getFreqDistricts(userId: number, transactionManager: EntityManager) {
     try {
-      const results = await transactionManager.find(FreqDistrictEntity, {
-        select: { code: true },
+      const freqDistricts = await transactionManager.find(FreqDistrictEntity, {
+        select: { code: true, isDefault: true },
         where: { userId },
       });
-      if (!results) {
-        throw new NotFoundException('코드 조회 결과가 없습니다');
+
+      if (freqDistricts.length === 0) {
+        return freqDistricts;
       }
-      const codes = results.map((result) => result.code);
 
-      const districtNames = await this.getNameByCodes(codes);
-      const result = districtNames.reduce((acc, item) => {
-        const { firstAddress, secondAddress, thirdAddress } = item;
-
-        // 1단계: 주소 정보 가져오기
-        const firstLevel = acc[firstAddress] || {};
-        const secondLevel = firstLevel[secondAddress] || [];
-
-        // 2단계: 주소 정보 추가
-        if (thirdAddress && !secondLevel.includes(thirdAddress)) {
-          secondLevel.push(thirdAddress);
+      const promises = freqDistricts.map(async (freqDistrict) => {
+        const code = freqDistrict.code;
+        const isDefault = freqDistrict.isDefault;
+        const districtName = await this.districtNameRepository.findOne({ where: { code } });
+        if (!districtName) {
+          throw new NotFoundException(`code가 ${code}인 지역은 존재하지 않습니다`);
         }
+        return { ...districtName, isDefault };
+      });
+      const results = await Promise.all(promises);
 
-        // 결과 데이터 갱신
-        firstLevel[secondAddress] = secondLevel;
-        acc[firstAddress] = firstLevel;
-
-        return acc;
-      }, {});
-      return result;
+      return results;
     } catch (e) {
       this.logger.error(e);
       throw e;
@@ -195,6 +195,9 @@ export class LocationsService {
 
   async updateDefaultDistrict(userId: number, dto: UpdateDefaultDistrictDto, transaction: EntityManager) {
     const { address } = dto;
+    if (!address || address === '') {
+      throw new BadRequestException('요청한 address가 비어있습니다');
+    }
     const { code } = await this.getCodeByName(address);
     // 현재 default로 설정되어있는 위치가 설정하고자 하는 위치랑 동일하지는 않는지 검사
     const defaultFreq = await this.freqDistrictRepository.findOne({ where: { userId, isDefault: true } });
@@ -271,11 +274,41 @@ export class LocationsService {
       const slicedSortedDistricts = sortedDistricts.slice(0, 30);
       const codes = slicedSortedDistricts.map((slicedSortedDistrict) => slicedSortedDistrict.code);
       const districtNames = await this.getNameByCodes(codes);
-      const fullAddress = districtNames.map(
-        (districtName) => `${districtName.firstAddress} ${districtName.secondAddress} ${districtName.thirdAddress}`,
-      );
+      const result = districtNames.map((districtName, index) => ({
+        code: codes[index],
+        address: `${districtName.firstAddress} ${districtName.secondAddress} ${districtName.thirdAddress}`,
+      }));
 
-      return fullAddress;
+      return result;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
+  async getAllDistrictsName() {
+    try {
+      const districtNames = await this.districtNameRepository.find({});
+
+      const result = districtNames.reduce((acc, item) => {
+        const { firstAddress, secondAddress, thirdAddress } = item;
+
+        // 1단계: 주소 정보 가져오기
+        const firstLevel = acc[firstAddress] || {};
+        const secondLevel = firstLevel[secondAddress] || [];
+
+        // 2단계: 주소 정보 추가
+        if (thirdAddress && !secondLevel.includes(thirdAddress)) {
+          secondLevel.push(thirdAddress);
+        }
+
+        // 결과 데이터 갱신
+        firstLevel[secondAddress] = secondLevel;
+        acc[firstAddress] = firstLevel;
+
+        return acc;
+      }, {});
+      return result;
     } catch (e) {
       this.logger.error(e);
       throw e;
