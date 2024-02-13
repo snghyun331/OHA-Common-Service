@@ -219,3 +219,35 @@ export const ApiResponseFreqDistrictDeleteSuccess = () =>
       },
     },
   });
+
+export const ApiResponseAllDistrictSuccess = () =>
+  ApiResponse({
+    status: 200,
+    description: 'OK',
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 200,
+          message: '성공적으로 모든 행정구역명을 불러왔습니다',
+          data: {
+            서울특별시: {
+              종로구: [
+                '청운효자동',
+                '종로1.2.3.4가동',
+                '종로5.6가동',
+                '창신1동',
+                '창신2동',
+                '창신3동',
+                '숭인1동',
+                '숭인2동',
+              ],
+              강남구: ['논현1동', '논현2동', '논현동'],
+            },
+            경기도: {
+              '고양시 덕양구': ['화정동', '화정1동'],
+            },
+          },
+        },
+      },
+    },
+  });

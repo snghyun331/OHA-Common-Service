@@ -29,6 +29,7 @@ import {
   ApiResponseSameGridSuccess,
   ApiResponseSuccess,
   ApiTagLocation,
+  ApiResponseAllDistrictSuccess,
 } from 'src/utils/decorators';
 import { GetCodeDto } from './dto/get-code.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -199,6 +200,7 @@ export class LocationsController {
 
   @ApiDescription('모든 행정구역명 조회')
   @ApiBearerAuthAccessToken()
+  @ApiResponseAllDistrictSuccess()
   @UseGuards(JwtAuthGuard)
   @Get('alldistricts')
   async getAllDistrictsName(): Promise<{ message: string; result: any }> {
