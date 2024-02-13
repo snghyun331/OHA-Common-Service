@@ -109,6 +109,9 @@ export class LocationsService {
   async createFreqDistrict(userId: number, dto: CreateFreqDistrictDto, transactionManager: EntityManager) {
     try {
       const { address } = dto;
+      if (!address || address === '') {
+        throw new BadRequestException('요청한 address가 비어있습니다');
+      }
       const { code } = await this.getCodeByName(address);
       // 사용자의 자주가는 지역 목록이 없다면, 맨 처음 추가하는 지역을 자동으로 default로 설정
       const checkIfNothing = await this.freqDistrictRepository.find({ where: { userId } });
@@ -133,6 +136,9 @@ export class LocationsService {
   async deleteFreqDistrict(userId: number, dto: DeleteFreqDistrictDto, transactionManager: EntityManager) {
     try {
       const { address } = dto;
+      if (!address || address === '') {
+        throw new BadRequestException('요청한 address가 비어있습니다');
+      }
       const { code } = await this.getCodeByName(address);
       const deleteResult = await transactionManager.delete(FreqDistrictEntity, { code, userId });
       if (deleteResult.affected === 0) {
@@ -189,6 +195,9 @@ export class LocationsService {
 
   async updateDefaultDistrict(userId: number, dto: UpdateDefaultDistrictDto, transaction: EntityManager) {
     const { address } = dto;
+    if (!address || address === '') {
+      throw new BadRequestException('요청한 address가 비어있습니다');
+    }
     const { code } = await this.getCodeByName(address);
     // 현재 default로 설정되어있는 위치가 설정하고자 하는 위치랑 동일하지는 않는지 검사
     const defaultFreq = await this.freqDistrictRepository.findOne({ where: { userId, isDefault: true } });
