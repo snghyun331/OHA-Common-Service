@@ -271,11 +271,12 @@ export class LocationsService {
       const slicedSortedDistricts = sortedDistricts.slice(0, 30);
       const codes = slicedSortedDistricts.map((slicedSortedDistrict) => slicedSortedDistrict.code);
       const districtNames = await this.getNameByCodes(codes);
-      const fullAddress = districtNames.map(
-        (districtName) => `${districtName.firstAddress} ${districtName.secondAddress} ${districtName.thirdAddress}`,
-      );
+      const result = districtNames.map((districtName, index) => ({
+        code: codes[index],
+        address: `${districtName.firstAddress} ${districtName.secondAddress} ${districtName.thirdAddress}`,
+      }));
 
-      return fullAddress;
+      return result;
     } catch (e) {
       this.logger.error(e);
       throw e;
