@@ -190,4 +190,13 @@ export class LocationsController {
     const result = await this.locationsService.getNearDistricts(dto);
     return { message: '성공적으로 근처 지역 리스트를 불러왔습니다', result };
   }
+
+  @ApiDescription('모든 행정구역명 조회')
+  @ApiBearerAuthAccessToken()
+  @UseGuards(JwtAuthGuard)
+  @Get('alldistricts')
+  async getAllDistrictsName(): Promise<{ message: string; result: any }> {
+    const result = await this.locationsService.getAllDistrictsName();
+    return { message: '성공적으로 모든 행정구역명을 불러왔습니다', result };
+  }
 }

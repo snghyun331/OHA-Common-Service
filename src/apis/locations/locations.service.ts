@@ -282,6 +282,35 @@ export class LocationsService {
     }
   }
 
+  async getAllDistrictsName() {
+    try {
+      const districtNames = await this.districtNameRepository.find({});
+
+      const result = districtNames.reduce((acc, item) => {
+        const { firstAddress, secondAddress, thirdAddress } = item;
+
+        // 1단계: 주소 정보 가져오기
+        const firstLevel = acc[firstAddress] || {};
+        const secondLevel = firstLevel[secondAddress] || [];
+
+        // 2단계: 주소 정보 추가
+        if (thirdAddress && !secondLevel.includes(thirdAddress)) {
+          secondLevel.push(thirdAddress);
+        }
+
+        // 결과 데이터 갱신
+        firstLevel[secondAddress] = secondLevel;
+        acc[firstAddress] = firstLevel;
+
+        return acc;
+      }, {});
+      return result;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+
   private async createNewFreqDistrict(properties, transactionManager: EntityManager) {
     const { code, userId, isDefault } = properties;
     const newFreqDistrict = new FreqDistrictEntity();
