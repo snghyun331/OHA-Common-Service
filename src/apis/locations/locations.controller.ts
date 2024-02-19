@@ -109,7 +109,7 @@ export class LocationsController {
   @ApiDescription('자주 가는 지역 추가')
   @ApiBearerAuthAccessToken()
   @ApiCreatedResponseFreqDistrictSuccess()
-  @ApiResponseErrorBadRequest('요청한 address가 비어있음')
+  @ApiResponseErrorBadRequest('요청한 address가 비어있음, 4개까지만 추가할 수 있음')
   @ApiResponseErrorConflict('해당 지역을 이미 선택')
   @UseInterceptors(TransactionInterceptor)
   @UseGuards(JwtAuthGuard)
