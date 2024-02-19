@@ -1,7 +1,14 @@
-import { Inject, Injectable, Logger, LoggerService, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  LoggerService,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WeatherEntity } from './entities/weather.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { NUM_OF_ROWS, PAGE_NO } from 'src/utils/constant';
@@ -11,6 +18,8 @@ import { SkyType } from './enums/sky.enum';
 import { PtyType } from './enums/pty.enum';
 import { FreqDistrictEntity } from '../locations/entities/freq-district.entity';
 import { LocationsService } from '../locations/locations.service';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob } from 'cron';
 
 @Injectable()
 export class WeathersService {
@@ -23,9 +32,30 @@ export class WeathersService {
     private freqDistrictRepository: Repository<FreqDistrictEntity>,
     private readonly httpService: HttpService,
     private locationsService: LocationsService,
-  ) {}
+    private schedulerRegistery: SchedulerRegistry,
+    private dataSource: DataSource,
+  ) {
+    this.insert();
+  }
 
-  async insertWeather(transactionManager: EntityManager) {
+  async insert() {
+    try {
+      const name = 'InsertJob';
+      const job = new CronJob('0 15 5,17 * * *', async () => {
+        this.logger.verbose(`Start Insert!`, job.lastDate());
+        await this.insertWeather();
+      });
+      this.schedulerRegistery.addCronJob(name, job);
+    } catch (e) {
+      this.logger.error(e);
+      this.insert(); // 에러 발생했을 경우 처음부터 재시도
+    }
+  }
+
+  private async insertWeather() {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
     try {
       const numOfRows = NUM_OF_ROWS;
       const pageNo = PAGE_NO;
@@ -48,8 +78,8 @@ export class WeathersService {
         const apiUrl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${process.env.WEATHER_KEY}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
         const res = await lastValueFrom(this.httpService.get(apiUrl));
 
-        // 0.5초 대기
-        await this.delay(500);
+        // // 0.5초 대기
+        // await this.delay(500);
 
         const datas = res.data.response?.body.items.item;
         if (!datas) {
@@ -69,14 +99,18 @@ export class WeathersService {
         for (const data of dataArray) {
           const weatherData = new WeatherEntity();
           Object.assign(weatherData, data);
-          await transactionManager.save(weatherData);
+          await queryRunner.manager.save(weatherData);
         }
       }
-
+      await queryRunner.commitTransaction();
+      this.logger.verbose('InsertJob Finished!!');
       return;
     } catch (e) {
+      await queryRunner.rollbackTransaction();
       this.logger.error(e);
       throw e;
+    } finally {
+      await queryRunner.release();
     }
   }
 

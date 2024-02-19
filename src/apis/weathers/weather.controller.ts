@@ -11,21 +11,15 @@ import { TransactionInterceptor } from 'src/interceptors/transaction.interceptor
 import { TransactionManager } from 'src/utils/decorators/transaction.decorator';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { GetUserId } from 'src/utils/decorators/get-user.decorator';
+import { SchedulerRegistry } from '@nestjs/schedule';
 
 @ApiTagWeather()
 @Controller('api/common/weather')
 export class WeathersController {
-  constructor(private readonly weathersService: WeathersService) {}
-
-  @ApiDescription('기상청날씨를 DB에 Insert - Backend용')
-  @ApiBearerAuthAccessToken()
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(TransactionInterceptor)
-  @Post('insert')
-  async insertWeathers(@TransactionManager() transactionManager): Promise<{ message: string }> {
-    await this.weathersService.insertWeather(transactionManager);
-    return { message: '성공' };
-  }
+  constructor(
+    private readonly weathersService: WeathersService,
+    private scheduler: SchedulerRegistry,
+  ) {}
 
   @ApiDescription(
     '사용자가 디폴트로 설정한 지역의 기상청 날씨 조회',
@@ -41,4 +35,21 @@ export class WeathersController {
     const result = await this.weathersService.getWeatherDatas(userId);
     return { message: '성공', result };
   }
+
+  @ApiDescription('기상청날씨를 DB에 Insert - Backend용')
+  @ApiBearerAuthAccessToken()
+  @UseGuards(JwtAuthGuard)
+  @Post('start-insert')
+  async insertWeatherDatas(): Promise<{ message: string }> {
+    const job = this.scheduler.getCronJob('InsertJob');
+    job.start();
+
+    return { message: 'Insert API가 성공적으로 호출되었습니다' };
+  }
+
+  // @Post('stop-insert')
+  // async stopInsert() {
+  //   const job = this.scheduler.getCronJob('test');
+  //   job.stop();
+  // }
 }
