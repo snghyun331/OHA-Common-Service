@@ -113,10 +113,15 @@ export class LocationsService {
         throw new BadRequestException('요청한 address가 비어있습니다');
       }
       const { code } = await this.getCodeByName(address);
-      // 사용자의 자주가는 지역 목록이 없다면, 맨 처음 추가하는 지역을 자동으로 default로 설정
-      const checkIfNothing = await this.freqDistrictRepository.find({ where: { userId } });
+
+      const userFreqDistrictList = await this.freqDistrictRepository.find({ where: { userId } });
       let isDefault;
-      if (checkIfNothing.length === 0) {
+      // 자주가는 지역이 4개이면 추가할 수 없다는 에러 반환
+      if (userFreqDistrictList.length === 4) {
+        throw new BadRequestException('자주 가는 지역은 4개까지만 추가할 수 있습니다');
+      }
+      // 사용자의 자주가는 지역 목록이 없다면, 맨 처음 추가하는 지역을 자동으로 default로 설정
+      if (userFreqDistrictList.length === 0) {
         isDefault = true;
       }
       const freqInfo = await this.freqDistrictRepository.findOne({ where: { code, userId } });

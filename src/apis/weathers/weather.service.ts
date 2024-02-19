@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger, LoggerService, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WeatherEntity } from './entities/weather.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { NUM_OF_ROWS, PAGE_NO } from 'src/utils/constant';
@@ -11,6 +11,8 @@ import { SkyType } from './enums/sky.enum';
 import { PtyType } from './enums/pty.enum';
 import { FreqDistrictEntity } from '../locations/entities/freq-district.entity';
 import { LocationsService } from '../locations/locations.service';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob } from 'cron';
 
 @Injectable()
 export class WeathersService {
@@ -23,60 +25,23 @@ export class WeathersService {
     private freqDistrictRepository: Repository<FreqDistrictEntity>,
     private readonly httpService: HttpService,
     private locationsService: LocationsService,
-  ) {}
+    private schedulerRegistery: SchedulerRegistry,
+    private dataSource: DataSource,
+  ) {
+    this.insert();
+  }
 
-  async insertWeather(transactionManager: EntityManager) {
+  async insert() {
     try {
-      const numOfRows = NUM_OF_ROWS;
-      const pageNo = PAGE_NO;
-      const koreaFullDate = new KoreaDate();
-      const baseDate = koreaFullDate.getFullDate();
-
-      let baseTime;
-      if (parseInt(koreaFullDate.getFullTime().slice(0, 2), 10) >= 17) {
-        baseTime = '1700';
-      } else {
-        baseTime = '0500';
-      }
-
-      const grids = AvailableGrids;
-
-      while (grids.length !== 0) {
-        const grid = grids.shift();
-        const nx = grid.nx;
-        const ny = grid.ny;
-        const apiUrl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${process.env.WEATHER_KEY}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
-        const res = await lastValueFrom(this.httpService.get(apiUrl));
-
-        // 0.5초 대기
-        await this.delay(500);
-
-        const datas = res.data.response?.body.items.item;
-        if (!datas) {
-          grids.push(grid);
-          continue;
-        }
-        const groupedData = datas.reduce((acc, item) => {
-          const key = `${item.fcstDate}_${item.fcstTime}`;
-          if (!acc[key]) {
-            acc[key] = { fcstDate: item.fcstDate, fcstTime: item.fcstTime, nx: item.nx, ny: item.ny };
-          }
-          acc[key][item.category] = item.fcstValue;
-          return acc;
-        }, {});
-
-        const dataArray = Object.values(groupedData);
-        for (const data of dataArray) {
-          const weatherData = new WeatherEntity();
-          Object.assign(weatherData, data);
-          await transactionManager.save(weatherData);
-        }
-      }
-
-      return;
+      const name = 'InsertJob';
+      const job = new CronJob('0 15 5,17 * * *', async () => {
+        this.logger.verbose(`Start Insert!`, job.lastDate());
+        await this.insertWeather();
+      });
+      this.schedulerRegistery.addCronJob(name, job);
     } catch (e) {
       this.logger.error(e);
-      throw e;
+      this.insert(); // 에러 발생했을 경우 처음부터 재시도
     }
   }
 
@@ -109,6 +74,67 @@ export class WeathersService {
     const hourlyTemp = TMP;
     const windSpeed = WSD;
     return { date, hour, precipPercent, precipType, humidity, sky, hourlyTemp, windSpeed };
+  }
+
+  private async insertWeather() {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const numOfRows = NUM_OF_ROWS;
+      const pageNo = PAGE_NO;
+      const koreaFullDate = new KoreaDate();
+      const baseDate = koreaFullDate.getFullDate();
+
+      let baseTime;
+      if (parseInt(koreaFullDate.getFullTime().slice(0, 2), 10) >= 17) {
+        baseTime = '1700';
+      } else {
+        baseTime = '0500';
+      }
+
+      const grids = AvailableGrids;
+
+      while (grids.length !== 0) {
+        const grid = grids.shift();
+        const nx = grid.nx;
+        const ny = grid.ny;
+        const apiUrl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${process.env.WEATHER_KEY}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
+        const res = await lastValueFrom(this.httpService.get(apiUrl));
+
+        // await this.delay(500);
+
+        const datas = res.data.response?.body.items.item;
+        if (!datas) {
+          grids.push(grid);
+          continue;
+        }
+        const groupedData = datas.reduce((acc, item) => {
+          const key = `${item.fcstDate}_${item.fcstTime}`;
+          if (!acc[key]) {
+            acc[key] = { fcstDate: item.fcstDate, fcstTime: item.fcstTime, nx: item.nx, ny: item.ny };
+          }
+          acc[key][item.category] = item.fcstValue;
+          return acc;
+        }, {});
+
+        const dataArray = Object.values(groupedData);
+        for (const data of dataArray) {
+          const weatherData = new WeatherEntity();
+          Object.assign(weatherData, data);
+          await queryRunner.manager.save(weatherData);
+        }
+      }
+      await queryRunner.commitTransaction();
+      this.logger.verbose('InsertJob Finished!!');
+      return;
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      this.logger.error(e);
+      throw e;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   private async getSkyType(sky: string) {
