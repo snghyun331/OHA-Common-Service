@@ -4,7 +4,6 @@ import { WeathersController } from './weather.controller';
 import { WeathersService } from './weather.service';
 import { WeatherEntity } from './entities/weather.entity';
 import { ScheduleModule } from '@nestjs/schedule';
-// import { TaskService } from './task.service';
 import { HttpModule } from '@nestjs/axios';
 import { LocationsService } from '../locations/locations.service';
 import { DistrictGridEntity } from '../locations/entities/district-grid.entity';
