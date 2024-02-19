@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Inject, Logger, LoggerService, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuthAccessToken,
   ApiDescription,
@@ -15,6 +15,8 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 @Controller('api/common/weather')
 export class WeathersController {
   constructor(
+    @Inject(Logger)
+    private readonly logger: LoggerService,
     private readonly weathersService: WeathersService,
     private scheduler: SchedulerRegistry,
   ) {}
@@ -41,7 +43,7 @@ export class WeathersController {
   async startInsert(): Promise<{ message: string }> {
     const job = this.scheduler.getCronJob('InsertJob');
     job.start();
-    console.log('InsertJob Batch Api Started!');
+    this.logger.verbose('InsertJob Batch Api Started!');
     return { message: 'Insert API가 성공적으로 호출되었습니다' };
   }
 
@@ -52,7 +54,7 @@ export class WeathersController {
   async stopInsert(): Promise<{ message: string }> {
     const job = this.scheduler.getCronJob('InsertJob');
     job.stop();
-    console.log('InsertJob Batch Api Terminated!');
+    this.logger.verbose('InsertJob Batch Api Terminated!');
     return { message: 'Terminate API가 성공적으로 호출되었습니다' };
   }
 }
