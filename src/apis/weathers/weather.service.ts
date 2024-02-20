@@ -85,15 +85,19 @@ export class WeathersService {
       const numOfRows = NUM_OF_ROWS;
       const pageNo = PAGE_NO;
       const koreaFullDate = new KoreaDate();
-      const currentHour = koreaFullDate.getFullTime().slice(0, 2);
+      const currentHour = parseInt(koreaFullDate.getFullTime().slice(0, 2), 10);
       const baseDate = koreaFullDate.getFullDate();
 
       let baseTime;
-      if (parseInt(currentHour, 10) >= 17) {
+      if (currentHour >= 17) {
         baseTime = '1700';
       } else {
         baseTime = '0500';
       }
+
+      this.logger.warn(`currentHour is.. ${currentHour}`);
+      this.logger.warn(`currentHour Type is... ${typeof currentHour} `);
+      this.logger.warn(`baseTime: ${baseTime}`);
 
       const grids = AvailableGrids;
 
