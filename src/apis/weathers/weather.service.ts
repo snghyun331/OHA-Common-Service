@@ -57,6 +57,10 @@ export class WeathersService {
     const koreaFullDate = new KoreaDate();
     const currentDate = koreaFullDate.getFullDate();
     const currentHour = koreaFullDate.getFullTime().slice(0, 2);
+
+    this.logger.warn(parseInt(currentHour, 10));
+    console.log(parseInt(currentHour, 10));
+
     const weatherInfos = await this.weatherRepository.findOne({
       where: { fcstDate: currentDate, fcstTime: currentHour + '00', nx, ny },
     });
@@ -84,10 +88,11 @@ export class WeathersService {
       const numOfRows = NUM_OF_ROWS;
       const pageNo = PAGE_NO;
       const koreaFullDate = new KoreaDate();
+      const currentHour = koreaFullDate.getFullTime().slice(0, 2);
       const baseDate = koreaFullDate.getFullDate();
 
       let baseTime;
-      if (parseInt(koreaFullDate.getFullTime().slice(0, 2), 10) >= 17) {
+      if (parseInt(currentHour, 10) >= 17) {
         baseTime = '1700';
       } else {
         baseTime = '0500';
