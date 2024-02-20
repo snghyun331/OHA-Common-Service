@@ -57,6 +57,10 @@ export class WeathersService {
     const koreaFullDate = new KoreaDate();
     const currentDate = koreaFullDate.getFullDate();
     const currentHour = koreaFullDate.getFullTime().slice(0, 2);
+
+    this.logger.warn(parseInt(currentHour, 10));
+    console.log(parseInt(currentHour, 10));
+
     const weatherInfos = await this.weatherRepository.findOne({
       where: { fcstDate: currentDate, fcstTime: currentHour + '00', nx, ny },
     });
@@ -86,9 +90,6 @@ export class WeathersService {
       const koreaFullDate = new KoreaDate();
       const currentHour = koreaFullDate.getFullTime().slice(0, 2);
       const baseDate = koreaFullDate.getFullDate();
-
-      this.logger.warn(parseInt(currentHour, 10));
-      console.log(parseInt(currentHour, 10));
 
       let baseTime;
       if (parseInt(currentHour, 10) >= 17) {
