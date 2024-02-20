@@ -35,7 +35,7 @@ export class WeathersService {
     try {
       const name = 'InsertJob';
       const job = new CronJob('0 15 5,17 * * *', async () => {
-        this.logger.verbose(`Start Insert!`, job.lastDate());
+        this.logger.log(`Start Insert!`, job.lastDate());
         await this.insertWeather();
       });
       this.schedulerRegistery.addCronJob(name, job);
@@ -57,9 +57,6 @@ export class WeathersService {
     const koreaFullDate = new KoreaDate();
     const currentDate = koreaFullDate.getFullDate();
     const currentHour = koreaFullDate.getFullTime().slice(0, 2);
-
-    this.logger.warn(parseInt(currentHour, 10));
-    console.log(parseInt(currentHour, 10));
 
     const weatherInfos = await this.weatherRepository.findOne({
       where: { fcstDate: currentDate, fcstTime: currentHour + '00', nx, ny },
@@ -88,15 +85,20 @@ export class WeathersService {
       const numOfRows = NUM_OF_ROWS;
       const pageNo = PAGE_NO;
       const koreaFullDate = new KoreaDate();
-      const currentHour = koreaFullDate.getFullTime().slice(0, 2);
+      const currentHour = parseInt(koreaFullDate.getFullTime().slice(0, 2), 10);
       const baseDate = koreaFullDate.getFullDate();
 
+      this.logger.warn(`currentHour is.. ${currentHour}`);
+      this.logger.warn(`currentHour Type is... ${typeof currentHour} `);
+
       let baseTime;
-      if (parseInt(currentHour, 10) >= 17) {
+      if (currentHour >= 17) {
         baseTime = '1700';
       } else {
         baseTime = '0500';
       }
+
+      this.logger.warn(`baseTime: ${baseTime}`);
 
       const grids = AvailableGrids;
 
@@ -131,7 +133,7 @@ export class WeathersService {
         }
       }
       await queryRunner.commitTransaction();
-      this.logger.verbose('InsertJob Finished!!');
+      this.logger.log('InsertJob Finished!!');
       return;
     } catch (e) {
       await queryRunner.rollbackTransaction();
