@@ -84,10 +84,14 @@ export class WeathersService {
       const numOfRows = NUM_OF_ROWS;
       const pageNo = PAGE_NO;
       const koreaFullDate = new KoreaDate();
+      const currentHour = koreaFullDate.getFullTime().slice(0, 2);
       const baseDate = koreaFullDate.getFullDate();
 
+      this.logger.warn(parseInt(currentHour, 10));
+      console.log(parseInt(currentHour, 10));
+
       let baseTime;
-      if (parseInt(koreaFullDate.getFullTime().slice(0, 2), 10) >= 17) {
+      if (parseInt(currentHour, 10) >= 17) {
         baseTime = '1700';
       } else {
         baseTime = '0500';
