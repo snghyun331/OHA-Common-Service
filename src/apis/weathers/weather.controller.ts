@@ -28,7 +28,7 @@ export class WeathersController {
   async startInsert(): Promise<{ message: string }> {
     const job = this.scheduler.getCronJob('InsertJob');
     job.start();
-    this.logger.verbose('InsertJob Batch Api Started!');
+    this.logger.log('InsertJob Batch Api Started!');
     return { message: 'Insert API가 성공적으로 호출되었습니다' };
   }
 
@@ -39,7 +39,7 @@ export class WeathersController {
   async stopInsert(): Promise<{ message: string }> {
     const job = this.scheduler.getCronJob('InsertJob');
     job.stop();
-    this.logger.verbose('InsertJob Batch Api Terminated!');
+    this.logger.log('InsertJob Batch Api Terminated!');
     return { message: 'Terminate API가 성공적으로 호출되었습니다' };
   }
 
