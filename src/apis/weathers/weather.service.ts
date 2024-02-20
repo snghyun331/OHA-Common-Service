@@ -102,9 +102,9 @@ export class WeathersService {
         const apiUrl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${process.env.WEATHER_KEY}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
         const res = await lastValueFrom(this.httpService.get(apiUrl));
 
-        // await this.delay(500);
+        await this.delay(400);
 
-        const datas = res.data.response?.body.items.item;
+        const datas = res.data.response?.body?.items?.item;
         if (!datas) {
           grids.push(grid);
           continue;
