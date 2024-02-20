@@ -88,6 +88,9 @@ export class WeathersService {
       const currentHour = parseInt(koreaFullDate.getFullTime().slice(0, 2), 10);
       const baseDate = koreaFullDate.getFullDate();
 
+      this.logger.warn(`currentHour is.. ${currentHour}`);
+      this.logger.warn(`currentHour Type is... ${typeof currentHour} `);
+
       let baseTime;
       if (currentHour >= 17) {
         baseTime = '1700';
@@ -95,8 +98,6 @@ export class WeathersService {
         baseTime = '0500';
       }
 
-      this.logger.warn(`currentHour is.. ${currentHour}`);
-      this.logger.warn(`currentHour Type is... ${typeof currentHour} `);
       this.logger.warn(`baseTime: ${baseTime}`);
 
       const grids = AvailableGrids;
