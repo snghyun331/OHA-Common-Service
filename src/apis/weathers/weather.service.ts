@@ -34,7 +34,7 @@ export class WeathersService {
   async insert() {
     try {
       const name = 'InsertJob';
-      const job = new CronJob('0 20 17 * * *', async () => {
+      const job = new CronJob('15 5,17 * * *', async () => {
         this.logger.log(`Start Insert!`, job.lastDate());
         await this.insertWeather();
       });
@@ -153,32 +153,36 @@ export class WeathersService {
   private async getSkyType(sky: string) {
     if (sky === '1') {
       return SkyType.clear;
-    } else if (sky === '3') {
+    }
+    if (sky === '3') {
       return SkyType.mostlyCloudy;
-    } else if (sky === '4') {
+    }
+    if (sky === '4') {
       return SkyType.cloudy;
-    } else {
-      return 'No Provided';
     }
   }
 
   private async getPtyType(pty: string) {
     if (pty === '0') {
       return PtyType.dry;
-    } else if (pty === '1') {
+    }
+    if (pty === '1') {
       return PtyType.rain;
-    } else if (pty === '2') {
+    }
+    if (pty === '2') {
       return PtyType.sleet;
-    } else if (pty === '3') {
+    }
+    if (pty === '3') {
       return PtyType.snow;
-    } else if (pty === '4') {
+    }
+    if (pty === '4') {
       return PtyType.shower;
-    } else {
-      return 'No Provided';
     }
   }
 
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+
+  private makeWidget(precipPercent, precipType, humidity, sky, hourlyTemp, windSpeed) {}
 }

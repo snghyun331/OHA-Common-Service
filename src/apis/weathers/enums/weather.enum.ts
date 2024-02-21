@@ -1,0 +1,15 @@
+export enum WeatherType {
+  clear = 'WTHR_CLEAR',
+  partlyCloudy = 'WTHR_PARTLY_CLOUDY',
+  cloudy = 'WTHR_CLOUDY',
+  mostlyCloudy = 'WTHR_MOSTLY_CLOUDY',
+  rain = 'WTHR_RAIN',
+  thunder = 'WTHR_THUNDER',
+  snow = 'WTHR_SNOW',
+  thunderRain = 'WTHR_THUNDER_RAIN',
+  veryHot = 'WTHR_VERY_HOT',
+  nightAir = 'WTHR_NIGHT_AIR',
+  wind = 'WTHR_WIND',
+  veryCold = 'WTHR_VERY_COLD',
+  rainBow = 'WTHR_RAINBOW',
+}
