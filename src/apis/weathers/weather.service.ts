@@ -34,7 +34,7 @@ export class WeathersService {
   async insert() {
     try {
       const name = 'InsertJob';
-      const job = new CronJob('0 0 14 * * *', async () => {
+      const job = new CronJob('0 20 17 * * *', async () => {
         this.logger.log(`Start Insert!`, job.lastDate());
         await this.insertWeather();
       });
