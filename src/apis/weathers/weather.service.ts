@@ -5,7 +5,6 @@ import { DataSource, Repository } from 'typeorm';
 import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { NUM_OF_ROWS, PAGE_NO } from 'src/utils/constant';
-import { KoreaDate } from 'src/utils/calculate-kst';
 import { AvailableGrids } from 'src/utils/available-grids';
 import { SkyType } from './enums/sky.enum';
 import { PtyType } from './enums/pty.enum';
@@ -13,6 +12,7 @@ import { FreqDistrictEntity } from '../locations/entities/freq-district.entity';
 import { LocationsService } from '../locations/locations.service';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class WeathersService {
@@ -34,7 +34,7 @@ export class WeathersService {
   async insert() {
     try {
       const name = 'InsertJob';
-      const job = new CronJob('0 15 5,17 * * *', async () => {
+      const job = new CronJob('0 0 14 * * *', async () => {
         this.logger.log(`Start Insert!`, job.lastDate());
         await this.insertWeather();
       });
@@ -54,9 +54,11 @@ export class WeathersService {
       throw new NotFoundException('default인 지역이 없습니다');
     }
     const { nx, ny } = await this.locationsService.getGridByCode(code);
-    const koreaFullDate = new KoreaDate();
-    const currentDate = koreaFullDate.getFullDate();
-    const currentHour = koreaFullDate.getFullTime().slice(0, 2);
+    const currentDateTime = moment().tz('Asia/Seoul');
+    const currentDate = currentDateTime.format('YYYYMMDD');
+    const currentHour = currentDateTime.format('HH:mm');
+    this.logger.verbose(`currentDate: ${currentDate}`);
+    this.logger.verbose(`currentHour: ${currentHour}`);
 
     const weatherInfos = await this.weatherRepository.findOne({
       where: { fcstDate: currentDate, fcstTime: currentHour + '00', nx, ny },
@@ -84,9 +86,9 @@ export class WeathersService {
     try {
       const numOfRows = NUM_OF_ROWS;
       const pageNo = PAGE_NO;
-      const koreaFullDate = new KoreaDate();
-      const currentHour = parseInt(koreaFullDate.getFullTime().slice(0, 2), 10);
-      const baseDate = koreaFullDate.getFullDate();
+      const currentDateTime = moment().tz('Asia/Seoul');
+      const baseDate = currentDateTime.format('YYYYMMDD');
+      const currentHour = parseInt(currentDateTime.format('HH:mm'), 10);
 
       this.logger.warn(`currentHour is.. ${currentHour}`);
       this.logger.warn(`currentHour Type is... ${typeof currentHour} `);
@@ -109,7 +111,7 @@ export class WeathersService {
         const apiUrl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${process.env.WEATHER_KEY}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
         const res = await lastValueFrom(this.httpService.get(apiUrl));
 
-        await this.delay(400);
+        await this.delay(500);
 
         const datas = res.data.response?.body?.items?.item;
         if (!datas) {
@@ -117,6 +119,10 @@ export class WeathersService {
           continue;
         }
         const groupedData = datas.reduce((acc, item) => {
+          if (!item.fcstDate || !item.fcstTime || !item.nx || !item.ny || !item.fcstValue) {
+            grids.push(grid);
+            return;
+          }
           const key = `${item.fcstDate}_${item.fcstTime}`;
           if (!acc[key]) {
             acc[key] = { fcstDate: item.fcstDate, fcstTime: item.fcstTime, nx: item.nx, ny: item.ny };
