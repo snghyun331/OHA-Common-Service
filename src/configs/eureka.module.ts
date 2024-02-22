@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { WinstonModule } from 'nest-winston';
 import { EurekaModule } from 'nestjs-eureka';
 import { Eureka_Heartbeat_Interval, Eureka_Registery_Interval } from 'src/utils/constant';
-
+import { winstonLogger } from './winston.config';
 // const env = process.env.NODE_ENV;
 
 @Module({
   imports: [
     EurekaModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule, WinstonModule],
       useFactory: async (configService: ConfigService) => ({
         service: {
           // name: `common-service${env === 'prod' ? '-dev' : ''}`,
@@ -22,6 +23,7 @@ import { Eureka_Heartbeat_Interval, Eureka_Registery_Interval } from 'src/utils/
           servicePath: '/eureka/apps/',
           registryFetchInterval: Eureka_Registery_Interval,
           heartbeatInterval: Eureka_Heartbeat_Interval,
+          logger: winstonLogger,
         },
       }),
       inject: [ConfigService],
