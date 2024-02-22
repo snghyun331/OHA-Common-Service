@@ -1,4 +1,4 @@
-import { Module, Logger } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EurekaModule } from 'nestjs-eureka';
 import { Eureka_Heartbeat_Interval, Eureka_Registery_Interval } from 'src/utils/constant';
@@ -9,7 +9,7 @@ import { Eureka_Heartbeat_Interval, Eureka_Registery_Interval } from 'src/utils/
   imports: [
     EurekaModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService, logger: Logger) => ({
+      useFactory: async (configService: ConfigService) => ({
         service: {
           // name: `common-service${env === 'prod' ? '-dev' : ''}`,
           name: 'common-service-dev',
@@ -22,10 +22,9 @@ import { Eureka_Heartbeat_Interval, Eureka_Registery_Interval } from 'src/utils/
           servicePath: '/eureka/apps/',
           registryFetchInterval: Eureka_Registery_Interval,
           heartbeatInterval: Eureka_Heartbeat_Interval,
-          logger: logger,
         },
       }),
-      inject: [ConfigService, Logger],
+      inject: [ConfigService],
     }),
   ],
   exports: [EurekaModule],
