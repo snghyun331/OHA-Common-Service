@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { EurekaModule } from 'nestjs-eureka';
-import { Logger as EurekaLogger, LoggerLevel } from 'eureka-js-client';
+import { EurekaModule, EurekaModuleOptions, EurekaModuleClientLogger } from 'nestjs-eureka';
 
 // const env = process.env.NODE_ENV;
 
@@ -9,7 +8,7 @@ import { Logger as EurekaLogger, LoggerLevel } from 'eureka-js-client';
   imports: [
     EurekaModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: async (configService: ConfigService): Promise<EurekaModuleOptions> => ({
         service: {
           // name: `common-service${env === 'prod' ? '-dev' : ''}`,
           name: 'common-service-dev',
@@ -21,9 +20,11 @@ import { Logger as EurekaLogger, LoggerLevel } from 'eureka-js-client';
           port: +configService.get('Eureka_PORT'),
           servicePath: '/eureka/apps/',
         },
-        logger: new EurekaLogger({
-          level: LoggerLevel.INFO,
-        }),
+        clientLogger: {
+          warn: console.warn,
+          info: console.info,
+          error: console.error,
+        } as EurekaModuleClientLogger,
       }),
       inject: [ConfigService],
     }),
