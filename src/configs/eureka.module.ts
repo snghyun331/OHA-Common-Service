@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EurekaModule } from 'nestjs-eureka';
+import { Eureka_Heartbeat_Interval, Eureka_Registery_Interval } from 'src/utils/constant';
 
 // const env = process.env.NODE_ENV;
 
@@ -19,7 +20,8 @@ import { EurekaModule } from 'nestjs-eureka';
           host: configService.get('Eureka_HOST'),
           port: +configService.get('Eureka_PORT'),
           servicePath: '/eureka/apps/',
-          heartbeatInterval: 5000000,
+          registryFetchInterval: Eureka_Registery_Interval,
+          heartbeatInterval: Eureka_Heartbeat_Interval,
         },
       }),
       inject: [ConfigService],
