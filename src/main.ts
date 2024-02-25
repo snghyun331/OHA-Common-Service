@@ -6,6 +6,7 @@ import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.int
 import { TransformInterceptor } from './interceptors/response.interceptors';
 import { SwaggerConfig } from './configs/swagger.config';
 import { SwaggerModule } from '@nestjs/swagger';
+import { eurekaClient } from './configs/eureka.module';
 
 const port = process.env.PORT1 || process.env.PORT2;
 
@@ -36,6 +37,8 @@ async function bootstrap() {
   // run server
   try {
     await app.listen(port);
+    eurekaClient.logger.level('log');
+    eurekaClient.start();
     winstonLogger.log(`Server is listening on port ${port} successfully`);
   } catch (e) {
     winstonLogger.error(e);

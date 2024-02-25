@@ -14,6 +14,6 @@ export const KOREA_TIME_OFFEST_TO_MILLIESEC = KOREA_TIME_OFFSET * 60000;
 
 export const EarthRadiusKm = 6371;
 
-export const Eureka_Heartbeat_Interval = 60000;
+export const Eureka_Heartbeat_Interval = 30000;
 
-export const Eureka_Registery_Interval = 60000;
+export const Eureka_Registery_Interval = 30000;

@@ -13,6 +13,7 @@ import { LocationsService } from '../locations/locations.service';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 import * as moment from 'moment-timezone';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class WeathersService {
@@ -27,6 +28,7 @@ export class WeathersService {
     private locationsService: LocationsService,
     private schedulerRegistery: SchedulerRegistry,
     private dataSource: DataSource,
+    private configService: ConfigService,
   ) {
     this.insert();
   }
@@ -90,6 +92,7 @@ export class WeathersService {
       const baseDate = currentDateTime.format('YYYYMMDD');
       const currentHour = parseInt(currentDateTime.format('HH:mm'), 10);
 
+      this.logger.warn(`currentDateTime is.. ${currentDateTime}`);
       this.logger.warn(`currentHour is.. ${currentHour}`);
       this.logger.warn(`currentHour Type is... ${typeof currentHour} `);
 
@@ -108,7 +111,7 @@ export class WeathersService {
         const grid = grids.shift();
         const nx = grid.nx;
         const ny = grid.ny;
-        const apiUrl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${process.env.WEATHER_KEY}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
+        const apiUrl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${this.configService.get('WEATHER_KEY')}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
         const res = await lastValueFrom(this.httpService.get(apiUrl));
 
         await this.delay(500);
@@ -139,7 +142,7 @@ export class WeathersService {
         }
       }
       await queryRunner.commitTransaction();
-      this.logger.log('InsertJob Finished!!');
+      this.logger.log(`InsertJob Finished!! at ${moment().tz('Asia/Seoul')}`);
       return;
     } catch (e) {
       await queryRunner.rollbackTransaction();
