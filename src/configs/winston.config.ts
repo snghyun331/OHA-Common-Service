@@ -7,7 +7,7 @@ const env = process.env.NODE_ENV;
 export const winstonLogger = WinstonModule.createLogger({
   transports: [
     new winston.transports.Console({
-      level: env === 'product' ? 'log' : 'verbose',
+      level: env === 'product' ? 'http' : 'sily',
       format: winston.format.combine(
         winston.format.timestamp({
           format: () => moment().tz('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss'),
