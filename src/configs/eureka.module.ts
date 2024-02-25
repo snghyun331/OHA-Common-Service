@@ -3,7 +3,7 @@ import { Eureka } from 'eureka-js-client';
 
 const env = process.env.NODE_ENV;
 
-const appName = `COMMON-SERVICE${env === 'prod' ? '-DEV' : ''}`;
+const appName = `COMMON-SERVICE${env === 'product' ? '-DEV' : ''}`;
 const executeUrl = `${process.env.HOST}:${process.env.PORT1}`;
 
 export const eurekaClient = new Eureka({
