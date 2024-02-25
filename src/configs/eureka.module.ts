@@ -19,7 +19,7 @@ export const eurekaClient = new Eureka({
     statusPageUrl: `http://${executeUrl}/info`,
     dataCenterInfo: {
       '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
-      name: 'OracleCloud',
+      name: 'MyOwn',
     },
   },
   eureka: {
