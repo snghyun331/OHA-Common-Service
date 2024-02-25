@@ -16,7 +16,7 @@ export const eurekaClient = new Eureka({
       '@enabled': true,
     },
     vipAddress: appName,
-    statusPageUrl: `http://${executeUrl}`,
+    statusPageUrl: `http://${executeUrl}/info`,
     dataCenterInfo: {
       '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
       name: 'MyOwn', // 특정 조직이 자체적으로 운영하는 데이터 센터
