@@ -93,8 +93,6 @@ export class WeathersService {
       const currentHour = parseInt(currentDateTime.format('HH:mm'), 10);
 
       this.logger.warn(`currentDateTime is.. ${currentDateTime}`);
-      this.logger.warn(`currentHour is.. ${currentHour}`);
-      this.logger.warn(`currentHour Type is... ${typeof currentHour} `);
 
       let baseTime;
       if (currentHour >= 17) {
@@ -122,7 +120,7 @@ export class WeathersService {
           continue;
         }
         const groupedData = datas.reduce((acc, item) => {
-          if (!item.fcstDate || !item.fcstTime || !item.nx || !item.ny || !item.fcstValue) {
+          if (!item.fcstDate || !item.fcstTime || !item.nx || !item.ny || !item.category || !item.fcstValue) {
             grids.push(grid);
             return;
           }
@@ -138,7 +136,13 @@ export class WeathersService {
         for (const data of dataArray) {
           const weatherData = new WeatherEntity();
           Object.assign(weatherData, data);
-          await queryRunner.manager.save(weatherData);
+          try {
+            await queryRunner.manager.save(weatherData);
+          } catch (e) {
+            this.logger.error(e);
+            this.logger.error(`${JSON.stringify(weatherData)}`);
+            throw e;
+          }
         }
       }
       await queryRunner.commitTransaction();
