@@ -18,8 +18,8 @@ export const eurekaClient = new Eureka({
     vipAddress: appName,
     statusPageUrl: `http://${executeUrl}/info`,
     dataCenterInfo: {
-      '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
-      name: 'MyOwn',
+      // '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
+      name: 'Amazon',
     },
   },
   eureka: {
