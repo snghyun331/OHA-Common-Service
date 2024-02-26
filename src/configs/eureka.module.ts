@@ -9,7 +9,7 @@ const executeUrl = `${process.env.HOST}:${process.env.PORT1}`;
 export const eurekaClient = new Eureka({
   instance: {
     app: appName,
-    hostName: executeUrl,
+    hostName: process.env.HOST,
     ipAddr: process.env.HOST,
     port: {
       $: process.env.PORT1,
