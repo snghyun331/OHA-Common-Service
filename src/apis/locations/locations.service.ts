@@ -108,11 +108,10 @@ export class LocationsService {
 
   async createFreqDistrict(userId: number, dto: CreateFreqDistrictDto, transactionManager: EntityManager) {
     try {
-      const { address } = dto;
-      if (!address || address === '') {
-        throw new BadRequestException('요청한 address가 비어있습니다');
+      const { code } = dto;
+      if (!code || code === '') {
+        throw new BadRequestException('요청한 지역 code가 비어있습니다');
       }
-      const { code } = await this.getCodeByName(address);
 
       const userFreqDistrictList = await this.freqDistrictRepository.find({ where: { userId } });
       let isDefault;
@@ -140,11 +139,10 @@ export class LocationsService {
 
   async deleteFreqDistrict(userId: number, dto: DeleteFreqDistrictDto, transactionManager: EntityManager) {
     try {
-      const { address } = dto;
-      if (!address || address === '') {
-        throw new BadRequestException('요청한 address가 비어있습니다');
+      const { code } = dto;
+      if (!code || code === '') {
+        throw new BadRequestException('요청한 code가 비어있습니다');
       }
-      const { code } = await this.getCodeByName(address);
       const deleteResult = await transactionManager.delete(FreqDistrictEntity, { code, userId });
       if (deleteResult.affected === 0) {
         throw new ConflictException('해당 지역은 이미 삭제되었습니다');
@@ -199,11 +197,10 @@ export class LocationsService {
   }
 
   async updateDefaultDistrict(userId: number, dto: UpdateDefaultDistrictDto, transaction: EntityManager) {
-    const { address } = dto;
-    if (!address || address === '') {
-      throw new BadRequestException('요청한 address가 비어있습니다');
+    const { code } = dto;
+    if (!code || code === '') {
+      throw new BadRequestException('요청한 지역 code가 비어있습니다');
     }
-    const { code } = await this.getCodeByName(address);
     // 현재 default로 설정되어있는 위치가 설정하고자 하는 위치랑 동일하지는 않는지 검사
     const defaultFreq = await this.freqDistrictRepository.findOne({ where: { userId, isDefault: true } });
     if (!defaultFreq) {
@@ -294,17 +291,17 @@ export class LocationsService {
   async getAllDistrictsName() {
     try {
       const districtNames = await this.districtNameRepository.find({});
-
       const result = districtNames.reduce((acc, item) => {
-        const { firstAddress, secondAddress, thirdAddress } = item;
+        const { code, firstAddress, secondAddress, thirdAddress } = item;
 
         // 1단계: 주소 정보 가져오기
         const firstLevel = acc[firstAddress] || {};
         const secondLevel = firstLevel[secondAddress] || [];
 
         // 2단계: 주소 정보 추가
-        if (thirdAddress && !secondLevel.includes(thirdAddress)) {
-          secondLevel.push(thirdAddress);
+        if (thirdAddress) {
+          const addressInfo = { address: thirdAddress, code }; // 주소 정보 객체 생성
+          secondLevel.push(addressInfo);
         }
 
         // 결과 데이터 갱신

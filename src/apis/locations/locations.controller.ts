@@ -106,10 +106,10 @@ export class LocationsController {
     return { message: '성공적으로 불러왔습니다', result };
   }
 
-  @ApiDescription('자주 가는 지역 추가')
+  @ApiDescription('자주 가는 지역 추가', '요청 값: 법(행)정동 코드(code)')
   @ApiBearerAuthAccessToken()
   @ApiCreatedResponseFreqDistrictSuccess()
-  @ApiResponseErrorBadRequest('요청한 address가 비어있음, 4개까지만 추가할 수 있음')
+  @ApiResponseErrorBadRequest('요청한 지역 code가 비어있음, 4개까지만 추가할 수 있음')
   @ApiResponseErrorConflict('해당 지역을 이미 선택')
   @UseInterceptors(TransactionInterceptor)
   @UseGuards(JwtAuthGuard)
@@ -137,10 +137,10 @@ export class LocationsController {
     return { message: '자주 가는 지역 정보를 성공적으로 불러왔습니다', result };
   }
 
-  @ApiDescription('자주 가는 지역 삭제')
+  @ApiDescription('자주 가는 지역 삭제', '요청 값: 법(행)정동 코드(code)')
   @ApiBearerAuthAccessToken()
   @ApiResponseFreqDistrictDeleteSuccess()
-  @ApiResponseErrorBadRequest('요청한 address가 비어있음')
+  @ApiResponseErrorBadRequest('요청한 지역 code가 비어있음')
   @ApiResponseErrorConflict('이미 지역 삭제')
   @UseInterceptors(TransactionInterceptor)
   @UseGuards(JwtAuthGuard)
@@ -154,10 +154,10 @@ export class LocationsController {
     return { message: '성공적으로 지역이 삭제되었습니다', result };
   }
 
-  @ApiDescription('디폴트 지역 변경')
+  @ApiDescription('디폴트 지역 변경', '요청 값: 법(행)정동 코드(code)')
   @ApiBearerAuthAccessToken()
   @ApiResponseSuccess()
-  @ApiResponseErrorBadRequest('요청한 address가 없거나, 디폴트 설정 및 해제가 실패')
+  @ApiResponseErrorBadRequest('요청한 지역 code가 없거나, 디폴트 설정 및 해제가 실패')
   @ApiResponseErrorConflict('해당 지역은 이미 디폴트 되어있음')
   @ApiResponseErrorNotFound('디폴트로 설정하고자 하는 지역이 자주 가는 지역 목록에 있지 않음')
   @ApiResponseErrorServer('알 수 없는 오류,  데이터 정합성이 훼손되어 DB 수정 필요 - Default인 지역이 없음')

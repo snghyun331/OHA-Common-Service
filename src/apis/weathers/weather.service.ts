@@ -36,7 +36,7 @@ export class WeathersService {
   async insert() {
     try {
       const name = 'InsertJob';
-      const job = new CronJob('15 5,17 * * *', async () => {
+      const job = new CronJob('21 12 * * *', async () => {
         this.logger.log(`Start Insert!`, job.lastDate());
         await this.insertWeather();
       });
@@ -60,8 +60,8 @@ export class WeathersService {
       const currentDateTime = moment().tz('Asia/Seoul');
       const currentDate = currentDateTime.format('YYYYMMDD');
       const currentHour = currentDateTime.format('HH:mm');
-      this.logger.verbose(`currentDate: ${currentDate}`);
-      this.logger.verbose(`currentHour: ${currentHour}`);
+      this.logger.warn(`currentDate: ${currentDate}`);
+      this.logger.warn(`currentHour: ${currentHour}`);
 
       const weatherInfos = await this.weatherRepository.findOne({
         where: { fcstDate: currentDate, fcstTime: currentHour + '00', nx, ny },
@@ -97,16 +97,12 @@ export class WeathersService {
       const baseDate = currentDateTime.format('YYYYMMDD');
       const currentHour = parseInt(currentDateTime.format('HH:mm'), 10);
 
-      this.logger.warn(`currentDateTime is.. ${currentDateTime}`);
-
       let baseTime;
       if (currentHour >= 17) {
         baseTime = '1700';
       } else {
         baseTime = '0500';
       }
-
-      this.logger.warn(`baseTime: ${baseTime}`);
 
       const grids = AvailableGrids;
 
@@ -162,6 +158,8 @@ export class WeathersService {
     }
   }
 
+  private async getLGT() {}
+
   private async getSkyType(sky: string) {
     if (sky === '1') {
       return SkyType.clear;
@@ -195,6 +193,4 @@ export class WeathersService {
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
-
-  private makeWidget(precipPercent, precipType, humidity, sky, hourlyTemp, windSpeed) {}
 }
