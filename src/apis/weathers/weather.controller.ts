@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Inject, Logger, LoggerService, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuthAccessToken,
   ApiDescription,
@@ -9,39 +9,11 @@ import {
 import { WeathersService } from './weather.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { GetUserId } from 'src/utils/decorators/get-user.decorator';
-import { SchedulerRegistry } from '@nestjs/schedule';
 
 @ApiTagWeather()
 @Controller('api/common/weather')
 export class WeathersController {
-  constructor(
-    @Inject(Logger)
-    private readonly logger: LoggerService,
-    private readonly weathersService: WeathersService,
-    private scheduler: SchedulerRegistry,
-  ) {}
-
-  @ApiDescription('배치 작업 가동 API - Backend용')
-  @ApiBearerAuthAccessToken()
-  @UseGuards(JwtAuthGuard)
-  @Post('start-batch')
-  async startInsert(): Promise<{ message: string }> {
-    const job = this.scheduler.getCronJob('InsertJob');
-    job.start();
-    this.logger.log('InsertJob Batch Api Started!');
-    return { message: 'Insert API가 성공적으로 호출되었습니다' };
-  }
-
-  @ApiDescription('배치 작업 종료 API - Backend용')
-  @ApiBearerAuthAccessToken()
-  @UseGuards(JwtAuthGuard)
-  @Post('terminate-batch')
-  async stopInsert(): Promise<{ message: string }> {
-    const job = this.scheduler.getCronJob('InsertJob');
-    job.stop();
-    this.logger.log('InsertJob Batch Api Terminated!');
-    return { message: 'Terminate API가 성공적으로 호출되었습니다' };
-  }
+  constructor(private readonly weathersService: WeathersService) {}
 
   @ApiDescription('사용자가 디폴트로 설정한 지역의 기상청 날씨 조회')
   @ApiBearerAuthAccessToken()

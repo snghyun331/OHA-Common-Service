@@ -10,8 +10,7 @@ import { SkyType } from './enums/sky.enum';
 import { PtyType } from './enums/pty.enum';
 import { FreqDistrictEntity } from '../locations/entities/freq-district.entity';
 import { LocationsService } from '../locations/locations.service';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { CronJob } from 'cron';
+import { Cron } from '@nestjs/schedule';
 import * as moment from 'moment-timezone';
 import { ConfigService } from '@nestjs/config';
 
@@ -26,25 +25,14 @@ export class WeathersService {
     private freqDistrictRepository: Repository<FreqDistrictEntity>,
     private readonly httpService: HttpService,
     private locationsService: LocationsService,
-    private schedulerRegistery: SchedulerRegistry,
     private dataSource: DataSource,
     private configService: ConfigService,
-  ) {
-    this.insert();
-  }
+  ) {}
 
-  async insert() {
-    try {
-      const name = 'InsertJob';
-      const job = new CronJob('21 12 * * *', async () => {
-        this.logger.log(`Start Insert!`, job.lastDate());
-        await this.insertWeather();
-      });
-      this.schedulerRegistery.addCronJob(name, job);
-    } catch (e) {
-      this.logger.error(e);
-      this.insert(); // 에러 발생했을 경우 처음부터 재시도
-    }
+  @Cron('20 43 21 * * *')
+  async insertWeatherEveryDay() {
+    this.logger.log('Start Insert!');
+    await this.insertWeather();
   }
 
   async getWeatherDatas(userId: number) {
@@ -96,7 +84,7 @@ export class WeathersService {
       const currentDateTime = moment().tz('Asia/Seoul');
       const baseDate = currentDateTime.format('YYYYMMDD');
       const currentHour = parseInt(currentDateTime.format('HH:mm'), 10);
-
+      console.log('currentHour', currentHour);
       let baseTime;
       if (currentHour >= 17) {
         baseTime = '1700';
