@@ -11,7 +11,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { LocationsService } from './locations.service';
+import { LocationService } from './location.service';
 import {
   GetUserId,
   TransactionManager,
@@ -32,9 +32,9 @@ import {
   ApiResponseAllDistrictSuccess,
 } from 'src/utils/decorators';
 import { GetCodeDto } from './dto/get-code.dto';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { GetNameDto } from './dto/get-name.dto';
-import { TransactionInterceptor } from 'src/interceptors/transaction.interceptor';
+import { TransactionInterceptor } from 'src/interceptor/transaction.interceptor';
 import { CreateFreqDistrictDto } from './dto/create-freq-district.dto';
 import { DeleteFreqDistrictDto } from './dto/delete-freq-district.dto';
 import { UpdateDefaultDistrictDto } from './dto/update-default-district.dto';
@@ -43,7 +43,7 @@ import { CurrentCoordinateDto } from './dto/current-coordinate.dto';
 @ApiTagLocation()
 @Controller('api/common/location')
 export class LocationsController {
-  constructor(private readonly locationsService: LocationsService) {}
+  constructor(private readonly locationService: LocationService) {}
 
   @ApiDescription(' (법)행정동명으로 (법)행정코드 반환 - Backend용')
   @ApiResponseSuccess()
@@ -55,7 +55,7 @@ export class LocationsController {
   @Post('getcode')
   async getDistrictCode(@Body() dto: GetCodeDto): Promise<{ message: string; result: any }> {
     const { address } = dto;
-    const code = await this.locationsService.getCodeByName(address);
+    const code = await this.locationService.getCodeByName(address);
     return { message: 'code를 성공적으로 가져왔습니다', result: code };
   }
 
@@ -69,7 +69,7 @@ export class LocationsController {
   @Post('getnamebycodes')
   async getDistrictNameByCodes(@Body() dto: GetNameDto): Promise<{ message: string; result: any }> {
     const { codes } = dto;
-    const result = await this.locationsService.getNameByCodes(codes);
+    const result = await this.locationService.getNameByCodes(codes);
     return { message: '행정구역명 리스트를 성공적으로 조회했습니다', result };
   }
 
@@ -81,7 +81,7 @@ export class LocationsController {
   @UseGuards(JwtAuthGuard)
   @Get('getnamebycode/:code')
   async getDistrictName(@Param('code') code: string): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.getNameByCode(code);
+    const result = await this.locationService.getNameByCode(code);
     return { message: '행정구역명을 성공적으로 조회했습니다', result };
   }
 
@@ -91,7 +91,7 @@ export class LocationsController {
   @UseGuards(JwtAuthGuard)
   @Get('getgrid/:code')
   async getDistrictGridByCode(@Param('code') code: string): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.getGridByCode(code);
+    const result = await this.locationService.getGridByCode(code);
     return { message: '성공', result };
   }
 
@@ -102,7 +102,7 @@ export class LocationsController {
   @UseGuards(JwtAuthGuard)
   @Get('samegrid/:code')
   async getSameGridDistricts(@Param('code') code: string): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.getSameGridDistricts(code);
+    const result = await this.locationService.getSameGridDistricts(code);
     return { message: '성공적으로 불러왔습니다', result };
   }
 
@@ -119,7 +119,7 @@ export class LocationsController {
     @GetUserId() userId: number,
     @Body() dto: CreateFreqDistrictDto,
   ): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.createFreqDistrict(userId, dto, transactionManager);
+    const result = await this.locationService.createFreqDistrict(userId, dto, transactionManager);
     return { message: '자주 가는 지역 리스트에 성공적으로 추가하였습니다', result };
   }
 
@@ -133,7 +133,7 @@ export class LocationsController {
     @GetUserId() userId: number,
     @TransactionManager() transactionManager,
   ): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.getFreqDistricts(userId, transactionManager);
+    const result = await this.locationService.getFreqDistricts(userId, transactionManager);
     return { message: '자주 가는 지역 정보를 성공적으로 불러왔습니다', result };
   }
 
@@ -150,7 +150,7 @@ export class LocationsController {
     @TransactionManager() transactionManager,
     @Body() dto: DeleteFreqDistrictDto,
   ): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.deleteFreqDistrict(userId, dto, transactionManager);
+    const result = await this.locationService.deleteFreqDistrict(userId, dto, transactionManager);
     return { message: '성공적으로 지역이 삭제되었습니다', result };
   }
 
@@ -169,7 +169,7 @@ export class LocationsController {
     @TransactionManager() transactionManager,
     @Body() dto: UpdateDefaultDistrictDto,
   ): Promise<{ message: string }> {
-    await this.locationsService.updateDefaultDistrict(userId, dto, transactionManager);
+    await this.locationService.updateDefaultDistrict(userId, dto, transactionManager);
     return { message: '성공적으로 디폴트 설정이 완료되었습니다' };
   }
 
@@ -180,7 +180,7 @@ export class LocationsController {
   @UseGuards(JwtAuthGuard)
   @Get('default')
   async getDefaultDistrict(@GetUserId() userId: number): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.getDefaultDistrict(userId);
+    const result = await this.locationService.getDefaultDistrict(userId);
     return { message: '성공적으로 디폴트 지역을 가져왔습니다', result };
   }
 
@@ -194,7 +194,7 @@ export class LocationsController {
   @UseGuards(JwtAuthGuard)
   @Post('neardistricts')
   async getNearDistricts(@Body() dto: CurrentCoordinateDto): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.getNearDistricts(dto);
+    const result = await this.locationService.getNearDistricts(dto);
     return { message: '성공적으로 근처 지역 30곳을 불러왔습니다', result };
   }
 
@@ -204,7 +204,7 @@ export class LocationsController {
   @UseGuards(JwtAuthGuard)
   @Get('alldistricts')
   async getAllDistrictsName(): Promise<{ message: string; result: any }> {
-    const result = await this.locationsService.getAllDistrictsName();
+    const result = await this.locationService.getAllDistrictsName();
     return { message: '성공적으로 모든 행정구역명을 불러왔습니다', result };
   }
 }

@@ -21,7 +21,7 @@ import { DistrictXYEntity } from './entities/district-xy.entity';
 import { calculateDistance } from 'src/utils/calculate-distance';
 
 @Injectable()
-export class LocationsService {
+export class LocationService {
   constructor(
     @Inject(Logger)
     private readonly logger: LoggerService,
