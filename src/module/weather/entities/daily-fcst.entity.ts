@@ -1,15 +1,12 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('Weather')
-export class WeatherEntity {
+@Entity('DailyForecast')
+export class DailyForecastEntity {
   @PrimaryGeneratedColumn()
   weatherId: number;
 
   @Column({ type: 'varchar', nullable: false })
   fcstDate: string;
-
-  @Column({ type: 'varchar', nullable: false })
-  fcstTime: string;
 
   @Column({ type: 'numeric', nullable: false })
   nx: number;
@@ -18,20 +15,8 @@ export class WeatherEntity {
   ny: number;
 
   @Column({ type: 'varchar', nullable: false })
-  POP: string;
+  TMN: string;
 
   @Column({ type: 'varchar', nullable: false })
-  PTY: string;
-
-  @Column({ type: 'varchar', nullable: false })
-  REH: string;
-
-  @Column({ type: 'varchar', nullable: false })
-  SKY: string;
-
-  @Column({ type: 'varchar', nullable: false })
-  TMP: string;
-
-  @Column({ type: 'varchar', nullable: false })
-  WSD: string;
+  TMX: string;
 }
