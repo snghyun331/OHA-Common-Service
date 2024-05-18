@@ -2,7 +2,7 @@ import { Logger, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WeathersController } from './weather.controller';
 import { WeatherService } from './weather.service';
-import { WeatherEntity } from './entities/weather.entity';
+import { VilageForecastEntity } from './entities/vilage-fcst.entity';
 import { LocationService } from '../location/location.service';
 import { DistrictGridEntity } from '../location/entities/district-grid.entity';
 import { FreqDistrictEntity } from '../location/entities/freq-district.entity';
@@ -12,7 +12,7 @@ import { DistrictXYEntity } from '../location/entities/district-xy.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      WeatherEntity,
+      VilageForecastEntity,
       DistrictGridEntity,
       FreqDistrictEntity,
       DistrictNameEntity,
