@@ -1,6 +1,6 @@
 export enum KmaType {
-  cloudy = 'KMA_CLOUDY',
-  mostlyCloudy = 'KMA_MOSTLY_CLOUDY',
+  cloudy = 'KMA_CLOUDY', // 흐림
+  mostlyCloudy = 'KMA_MOSTLY_CLOUDY', // 구름 많음
   clear = 'KMA_CLEAR',
   thunder = 'KMA_THUNDER',
   wind = 'KMA_WINDY',

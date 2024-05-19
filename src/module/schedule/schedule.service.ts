@@ -34,7 +34,8 @@ export class SchdulerService {
       const currentDateTime = moment().tz('Asia/Seoul');
       const baseDate = currentDateTime.format('YYYYMMDD');
       const currentHour = parseInt(currentDateTime.format('HH:mm'), 10);
-
+      let count = 0;
+      let count2 = 0;
       let baseTime;
       if (currentHour >= 17) {
         baseTime = '1700';
@@ -43,6 +44,7 @@ export class SchdulerService {
       }
 
       const grids = AvailableGrids;
+
       const results: VilageForecastEntity[] = [];
       while (grids.length !== 0) {
         const grid = grids.shift();
@@ -58,6 +60,7 @@ export class SchdulerService {
           grids.push(grid);
           continue;
         }
+        count += 1;
         const groupedData = datas.reduce((acc, item) => {
           if (!item.fcstDate || !item.fcstTime || !item.nx || !item.ny || !item.category || !item.fcstValue) {
             grids.push(grid);
@@ -71,6 +74,7 @@ export class SchdulerService {
           return acc;
         }, {});
 
+        count2 += 1;
         const dataArray = Object.values(groupedData);
 
         for (const data of dataArray) {
@@ -79,9 +83,11 @@ export class SchdulerService {
           results.push(weatherData);
         }
       }
+      this.logger.warn('count: ', count);
+      this.logger.warn('count2: ', count2);
       await queryRunner.manager.save(results);
       await queryRunner.commitTransaction();
-      this.logger.log(`InsertJob Finished!! at ${moment().tz('Asia/Seoul')}`);
+      this.logger.log(`VilageForecast insertJob Finished!! at ${moment().tz('Asia/Seoul')}`);
       return;
     } catch (e) {
       await queryRunner.rollbackTransaction();
@@ -149,7 +155,7 @@ export class SchdulerService {
       }
       await queryRunner.manager.save(results);
       await queryRunner.commitTransaction();
-      this.logger.log(`InsertJob Finished!! at ${moment().tz('Asia/Seoul')}`);
+      this.logger.log(`UltraForecast insertJob Finished!! at ${moment().tz('Asia/Seoul')}`);
       return;
     } catch (e) {
       await queryRunner.rollbackTransaction();
@@ -172,6 +178,7 @@ export class SchdulerService {
       const pageNo = 1;
       const currentDateTime = moment().tz('Asia/Seoul');
       const baseDate = currentDateTime.format('YYYYMMDD');
+
       const currentTime = currentDateTime.format('HH:mm');
       const currentHour = currentTime.slice(0, 2);
       const baseTime = `${currentHour}00`;
@@ -221,7 +228,7 @@ export class SchdulerService {
       }
       await queryRunner.manager.save(results);
       await queryRunner.commitTransaction();
-      this.logger.log(`InsertJob Finished!! at ${moment().tz('Asia/Seoul')}`);
+      this.logger.log(`DailyForecast insertJob Finished!! at ${moment().tz('Asia/Seoul')}`);
       return;
     } catch (e) {
       await queryRunner.rollbackTransaction();

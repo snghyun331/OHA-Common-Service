@@ -2,12 +2,12 @@ import { Inject, Injectable, Logger, LoggerService, NotFoundException } from '@n
 import { InjectRepository } from '@nestjs/typeorm';
 import { VilageForecastEntity } from './entities/vilage-fcst.entity';
 import { Repository } from 'typeorm';
-import { SkyType } from './enums/sky.enum';
-import { PtyType } from './enums/pty.enum';
 import { FreqDistrictEntity } from '../location/entities/freq-district.entity';
 import { LocationService } from '../location/location.service';
 import * as moment from 'moment-timezone';
 import { KmaType } from './enums/kma.enum';
+import { DailyForecastEntity } from './entities/daily-fcst.entity';
+import { UltraSrtForecastEntity } from './entities/ultra-srt-fcst.entity';
 
 @Injectable()
 export class WeatherService {
@@ -16,6 +16,10 @@ export class WeatherService {
     private readonly logger: LoggerService,
     @InjectRepository(VilageForecastEntity)
     private weatherRepository: Repository<VilageForecastEntity>,
+    @InjectRepository(DailyForecastEntity)
+    private dailyForecastRepository: Repository<DailyForecastEntity>,
+    @InjectRepository(UltraSrtForecastEntity)
+    private ultraSrtForecastRepository: Repository<UltraSrtForecastEntity>,
     @InjectRepository(FreqDistrictEntity)
     private freqDistrictRepository: Repository<FreqDistrictEntity>,
     private locationService: LocationService,
@@ -30,12 +34,13 @@ export class WeatherService {
       if (!code) {
         throw new NotFoundException('default인 지역이 없습니다');
       }
+
       const { nx, ny } = await this.locationService.getGridByCode(code);
+
       const currentDateTime = moment().tz('Asia/Seoul');
       const currentDate = currentDateTime.format('YYYYMMDD');
-      const currentHour = currentDateTime.format('HH:mm');
-      this.logger.warn(`currentDate: ${currentDate}`);
-      this.logger.warn(`currentHour: ${currentHour}`);
+      const currentTime = currentDateTime.format('HH:mm');
+      const currentHour = currentTime.slice(0, 2);
 
       const weatherInfos = await this.weatherRepository.findOne({
         where: { fcstDate: currentDate, fcstTime: currentHour + '00', nx, ny },
@@ -44,55 +49,35 @@ export class WeatherService {
         throw new NotFoundException('날씨 정보가 없습니다');
       }
 
-      const { fcstDate, fcstTime, POP, PTY, REH, SKY, TMP, WSD } = weatherInfos;
-      const date = fcstDate;
-      const hour = fcstTime;
-      const precipPercent = POP;
-      const precipType = await this.getPtyType(PTY);
-      const humidity = REH;
-      const sky = await this.getSkyType(SKY);
-      const hourlyTemp = TMP;
-      const windSpeed = WSD;
-      return { date, hour, precipPercent, precipType, humidity, sky, hourlyTemp, windSpeed };
+      const isTempDiffHigh = await this.isTempDiffHigh(currentDate, nx, ny);
+
+      const { LGT } = await this.ultraSrtForecastRepository.findOne({
+        select: { LGT: true },
+        where: { fcstDate: currentDate, fcstTime: `${currentHour}` + '00', nx, ny },
+      });
+
+      const { POP, PTY, SKY, TMP, WSD } = weatherInfos;
+      const widget = await this.getIllustration(PTY, SKY, TMP, WSD, LGT);
+      if (widget === KmaType.cloudy || widget === KmaType.mostlyCloudy) {
+        return { widget, POP, isTempDiffHigh, TMP };
+      } else {
+        return { widget, isTempDiffHigh, TMP };
+      }
     } catch (e) {
       this.logger.error(e);
       throw e;
     }
   }
 
-  private async getSkyType(sky: string) {
-    if (sky === '1') {
-      return SkyType.clear;
-    }
-    if (sky === '3') {
-      return SkyType.mostlyCloudy;
-    }
-    if (sky === '4') {
-      return SkyType.cloudy;
-    }
-  }
-
-  private async getPtyType(pty: string) {
-    if (pty === '0') {
-      return PtyType.dry;
-    }
-    if (pty === '1') {
-      return PtyType.rain;
-    }
-    if (pty === '2') {
-      return PtyType.sleet;
-    }
-    if (pty === '3') {
-      return PtyType.snow;
-    }
-    if (pty === '4') {
-      return PtyType.shower;
-    }
-  }
-
   // 일교차 심한 지 여부 판별하는 함수 (10도 차이)
-
-  // 강수확률 노출하는 함수
+  async isTempDiffHigh(baseDate, nx, ny) {
+    const result = await this.dailyForecastRepository.findOne({ where: { fcstDate: baseDate, nx: nx, ny: ny } });
+    if (parseInt(result.TMX) - parseInt(result.TMN) >= 10) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   // 일러스트 위젯 구분하는 함수
   async getIllustration(precipType, sky, hourlyTemp, windSpeed, stroke) {
