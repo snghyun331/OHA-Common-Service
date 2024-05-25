@@ -1,8 +1,8 @@
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, Logger, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron } from '@nestjs/schedule';
-import { DataSource } from 'typeorm';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { DataSource, LessThan } from 'typeorm';
 import { lastValueFrom } from 'rxjs';
 import { NUM_OF_ROWS, PAGE_NO } from 'src/utils/constant';
 import { AvailableGrids } from 'src/utils/available-grids';
@@ -34,8 +34,7 @@ export class SchdulerService {
       const currentDateTime = moment().tz('Asia/Seoul');
       const baseDate = currentDateTime.format('YYYYMMDD');
       const currentHour = parseInt(currentDateTime.format('HH:mm'), 10);
-      let count = 0;
-      let count2 = 0;
+
       let baseTime;
       if (currentHour >= 17) {
         baseTime = '1700';
@@ -43,14 +42,15 @@ export class SchdulerService {
         baseTime = '0500';
       }
 
-      const grids = AvailableGrids;
+      const grids = [...AvailableGrids];
 
       const results: VilageForecastEntity[] = [];
+
       while (grids.length !== 0) {
         const grid = grids.shift();
         const nx = grid.nx;
         const ny = grid.ny;
-        const apiUrl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${this.configService.get('WEATHER_KEY')}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
+        const apiUrl = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${this.configService.get('WEATHER_KEY')}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
         const res = await lastValueFrom(this.httpService.get(apiUrl));
 
         await this.delay(500);
@@ -60,7 +60,6 @@ export class SchdulerService {
           grids.push(grid);
           continue;
         }
-        count += 1;
         const groupedData = datas.reduce((acc, item) => {
           if (!item.fcstDate || !item.fcstTime || !item.nx || !item.ny || !item.category || !item.fcstValue) {
             grids.push(grid);
@@ -74,7 +73,6 @@ export class SchdulerService {
           return acc;
         }, {});
 
-        count2 += 1;
         const dataArray = Object.values(groupedData);
 
         for (const data of dataArray) {
@@ -83,8 +81,7 @@ export class SchdulerService {
           results.push(weatherData);
         }
       }
-      this.logger.warn('count: ', count);
-      this.logger.warn('count2: ', count2);
+
       await queryRunner.manager.save(results);
       await queryRunner.commitTransaction();
       this.logger.log(`VilageForecast insertJob Finished!! at ${moment().tz('Asia/Seoul')}`);
@@ -112,10 +109,21 @@ export class SchdulerService {
       const baseDate = currentDateTime.format('YYYYMMDD');
       const currentTime = currentDateTime.format('HH:mm');
       const currentHour = currentTime.slice(0, 2);
+      const currentMinute = currentTime.slice(3);
 
-      const baseTime = `${currentHour}30`;
+      let baseTime;
+      if (currentMinute >= '50') {
+        baseTime = `${currentHour}30`;
+      } else {
+        if (currentHour === '00') {
+          baseTime = '2330';
+        } else {
+          const previousHour = (parseInt(currentHour, 10) - 1).toString().padStart(2, '0');
+          baseTime = `${previousHour}30`;
+        }
+      }
 
-      const grids = AvailableGrids;
+      const grids = [...AvailableGrids];
 
       const results: UltraSrtForecastEntity[] = [];
 
@@ -123,7 +131,7 @@ export class SchdulerService {
         const grid = grids.shift();
         const nx = grid.nx;
         const ny = grid.ny;
-        const apiUrl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey=${this.configService.get('WEATHER_KEY')}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
+        const apiUrl = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey=${this.configService.get('WEATHER_KEY')}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
         const res = await lastValueFrom(this.httpService.get(apiUrl));
 
         await this.delay(500);
@@ -153,6 +161,7 @@ export class SchdulerService {
           }
         }
       }
+
       await queryRunner.manager.save(results);
       await queryRunner.commitTransaction();
       this.logger.log(`UltraForecast insertJob Finished!! at ${moment().tz('Asia/Seoul')}`);
@@ -174,7 +183,7 @@ export class SchdulerService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-      const numOfRows = 206;
+      const numOfRows = 302;
       const pageNo = 1;
       const currentDateTime = moment().tz('Asia/Seoul');
       const baseDate = currentDateTime.format('YYYYMMDD');
@@ -183,7 +192,7 @@ export class SchdulerService {
       const currentHour = currentTime.slice(0, 2);
       const baseTime = `${currentHour}00`;
 
-      const grids = AvailableGrids;
+      const grids = [...AvailableGrids];
 
       const results: DailyForecastEntity[] = [];
 
@@ -191,7 +200,7 @@ export class SchdulerService {
         const grid = grids.shift();
         const nx = grid.nx;
         const ny = grid.ny;
-        const apiUrl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${this.configService.get('WEATHER_KEY')}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
+        const apiUrl = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${this.configService.get('WEATHER_KEY')}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
         const res = await lastValueFrom(this.httpService.get(apiUrl));
 
         await this.delay(500);
@@ -226,10 +235,38 @@ export class SchdulerService {
           results.push(weatherData);
         }
       }
+
       await queryRunner.manager.save(results);
       await queryRunner.commitTransaction();
       this.logger.log(`DailyForecast insertJob Finished!! at ${moment().tz('Asia/Seoul')}`);
       return;
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      this.logger.error(e);
+      throw e;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async deleteWeatherData() {
+    this.logger.log('Start delete WeatherDatas!!');
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const currentDateTime = moment().tz('Asia/Seoul');
+      const currentDate = currentDateTime.format('YYYYMMDD');
+
+      await Promise.all([
+        queryRunner.manager.delete(VilageForecastEntity, { fcstDate: LessThan(currentDate) }),
+        queryRunner.manager.delete(DailyForecastEntity, { fcstDate: LessThan(currentDate) }),
+        queryRunner.manager.delete(UltraSrtForecastEntity, { fcstDate: LessThan(currentDate) }),
+      ]);
+
+      await queryRunner.commitTransaction();
+      this.logger.log(`DeleteJob Finished!! at ${moment().tz('Asia/Seoul')}`);
     } catch (e) {
       await queryRunner.rollbackTransaction();
       this.logger.error(e);
