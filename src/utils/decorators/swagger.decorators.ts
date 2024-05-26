@@ -301,3 +301,35 @@ export const ApiResponseAllDistrictSuccess = () =>
       },
     },
   });
+
+export const ApiResponseWeatherSuccess = () =>
+  ApiResponse({
+    status: 200,
+    // type: ApiResponseDto,
+    description: `widget: {
+      KMA_CLOUDY: 흐림, 
+      KMA_MOSTLY_CLOUDY: 구름 많음, 
+      KMA_CLEAR: 맑음,
+      KMA_WINDY: 바람,
+      KMA_RAIN: 비,
+      KMA_SNOW: 눈,
+      KMA_THUNDER_RAIN: 천둥비,
+      KMA_HOT: 고온,
+      KMA_COLD: 저온,
+      KMA_RAIN_SNOW: 비+눈
+    }, probPrecip: 강수확률, isTempDiffHigh: 일교차 10도 이상인가(맞음: true, 아님: false), hourlyTemp: 1시간 기온`,
+    content: {
+      'application/json': {
+        example: {
+          statusCode: 200,
+          message: '성공',
+          data: {
+            widget: 'KMA_CLOUDY',
+            probPrecip: '30',
+            isTempDiffHigh: false,
+            hourlyTemp: '14',
+          },
+        },
+      },
+    },
+  });

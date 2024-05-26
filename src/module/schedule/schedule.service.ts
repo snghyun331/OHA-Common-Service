@@ -51,9 +51,9 @@ export class SchdulerService {
         const nx = grid.nx;
         const ny = grid.ny;
         const apiUrl = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${this.configService.get('WEATHER_KEY')}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
-        const res = await lastValueFrom(this.httpService.get(apiUrl));
+        const res = await this.makeRequestWithRetry(apiUrl, 3); // 3번까지 재시도
 
-        await this.delay(500);
+        await this.delay(1000);
 
         const datas = res.data.response?.body?.items?.item;
         if (!datas) {
@@ -82,7 +82,11 @@ export class SchdulerService {
         }
       }
 
-      await queryRunner.manager.save(results);
+      const chunkSize = 1000;
+      for (let i = 0; i < results.length; i += chunkSize) {
+        const chunk = results.slice(i, i + chunkSize);
+        await queryRunner.manager.save(chunk);
+      }
       await queryRunner.commitTransaction();
       this.logger.log(`VilageForecast insertJob Finished!! at ${moment().tz('Asia/Seoul')}`);
       return;
@@ -132,9 +136,9 @@ export class SchdulerService {
         const nx = grid.nx;
         const ny = grid.ny;
         const apiUrl = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey=${this.configService.get('WEATHER_KEY')}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
-        const res = await lastValueFrom(this.httpService.get(apiUrl));
+        const res = await this.makeRequestWithRetry(apiUrl, 3); // 3번까지 재시도
 
-        await this.delay(500);
+        await this.delay(1000);
 
         const datas = res.data.response?.body?.items?.item;
         if (!datas) {
@@ -201,9 +205,9 @@ export class SchdulerService {
         const nx = grid.nx;
         const ny = grid.ny;
         const apiUrl = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${this.configService.get('WEATHER_KEY')}&numOfRows=${numOfRows}&dataType=JSON&pageNo=${pageNo}&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`;
-        const res = await lastValueFrom(this.httpService.get(apiUrl));
+        const res = await this.makeRequestWithRetry(apiUrl, 3); // 3번까지 재시도
 
-        await this.delay(500);
+        await this.delay(1000);
 
         const datas = res.data.response?.body?.items?.item;
         if (!datas) {
@@ -278,5 +282,20 @@ export class SchdulerService {
 
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private async makeRequestWithRetry(url: string, retries: number): Promise<any> {
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await lastValueFrom(this.httpService.get(url));
+      } catch (error) {
+        if (error.code === 'ECONNRESET' && i < retries - 1) {
+          this.logger.warn(`Retrying request... Attempt ${i + 1} of ${retries}`);
+          await this.delay(2000); // 1초 대기 후 재시도
+        } else {
+          throw error;
+        }
+      }
+    }
   }
 }

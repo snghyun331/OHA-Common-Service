@@ -45,23 +45,24 @@ export class WeatherService {
       const weatherInfos = await this.weatherRepository.findOne({
         where: { fcstDate: currentDate, fcstTime: currentHour + '00', nx, ny },
       });
+
       if (!weatherInfos) {
         throw new NotFoundException('날씨 정보가 없습니다');
       }
 
       const isTempDiffHigh = await this.isTempDiffHigh(currentDate, nx, ny);
 
-      const { LGT } = await this.ultraSrtForecastRepository.findOne({
+      const { LGT: stroke } = await this.ultraSrtForecastRepository.findOne({
         select: { LGT: true },
-        where: { fcstDate: currentDate, fcstTime: `${currentHour}` + '00', nx, ny },
+        where: { fcstDate: currentDate, fcstTime: `11` + '00', nx, ny },
       });
 
-      const { POP, PTY, SKY, TMP, WSD } = weatherInfos;
-      const widget = await this.getIllustration(PTY, SKY, TMP, WSD, LGT);
+      const { POP: probPrecip, PTY: precipType, SKY: sky, TMP: hourlyTemp, WSD: windSpeed } = weatherInfos;
+      const widget = await this.getIllustration(precipType, sky, hourlyTemp, windSpeed, stroke);
       if (widget === KmaType.cloudy || widget === KmaType.mostlyCloudy) {
-        return { widget, POP, isTempDiffHigh, TMP };
+        return { widget, probPrecip, isTempDiffHigh, hourlyTemp };
       } else {
-        return { widget, isTempDiffHigh, TMP };
+        return { widget, isTempDiffHigh, hourlyTemp };
       }
     } catch (e) {
       this.logger.error(e);

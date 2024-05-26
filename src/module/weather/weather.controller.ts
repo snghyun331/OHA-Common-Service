@@ -4,6 +4,7 @@ import {
   ApiDescription,
   ApiResponseErrorNotFound,
   ApiResponseSuccess,
+  ApiResponseWeatherSuccess,
   ApiTagWeather,
 } from 'src/utils/decorators';
 import { WeatherService } from './weather.service';
@@ -16,6 +17,7 @@ export class WeathersController {
   constructor(private readonly weatherService: WeatherService) {}
 
   @ApiDescription('사용자가 디폴트로 설정한 지역의 기상청 날씨 조회')
+  @ApiResponseWeatherSuccess()
   @ApiBearerAuthAccessToken()
   @ApiResponseSuccess()
   @ApiResponseErrorNotFound('디폴트로 설정한 지역이 없거나 디폴트 지역의 날씨 정보가 없음')
