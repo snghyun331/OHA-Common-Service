@@ -10,9 +10,11 @@ import { DistrictNameEntity } from '../location/entities/district-name.entity';
 import { DistrictXYEntity } from '../location/entities/district-xy.entity';
 import { DailyForecastEntity } from './entities/daily-fcst.entity';
 import { UltraSrtForecastEntity } from './entities/ultra-srt-fcst.entity';
+import { LocationModule } from '../location/location.module';
 
 @Module({
   imports: [
+    LocationModule,
     TypeOrmModule.forFeature([
       VilageForecastEntity,
       DailyForecastEntity,
