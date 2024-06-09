@@ -54,7 +54,7 @@ export class WeatherService {
 
       const { LGT: stroke } = await this.ultraSrtForecastRepository.findOne({
         select: { LGT: true },
-        where: { fcstDate: currentDate, fcstTime: `11` + '00', nx, ny },
+        where: { fcstDate: currentDate, fcstTime: currentHour + '00', nx, ny },
       });
 
       const { POP: probPrecip, PTY: precipType, SKY: sky, TMP: hourlyTemp, WSD: windSpeed } = weatherInfos;

@@ -166,7 +166,11 @@ export class SchdulerService {
         }
       }
 
-      await queryRunner.manager.save(results);
+      const chunkSize = 1000;
+      for (let i = 0; i < results.length; i += chunkSize) {
+        const chunk = results.slice(i, i + chunkSize);
+        await queryRunner.manager.save(chunk);
+      }
       await queryRunner.commitTransaction();
       this.logger.log(`UltraForecast insertJob Finished!! at ${moment().tz('Asia/Seoul')}`);
       return;
@@ -288,12 +292,12 @@ export class SchdulerService {
     for (let i = 0; i < retries; i++) {
       try {
         return await lastValueFrom(this.httpService.get(url));
-      } catch (error) {
-        if (error.code === 'ECONNRESET' && i < retries - 1) {
-          this.logger.warn(`Retrying request... Attempt ${i + 1} of ${retries}`);
+      } catch (err) {
+        if ((err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND') && i < retries - 1) {
+          this.logger.warn(`요청을 재시도 합니다... ${retries}번의 기회 중 Attempt ${i + 1}번 사용`);
           await this.delay(2000); // 1초 대기 후 재시도
         } else {
-          throw error;
+          throw err;
         }
       }
     }
