@@ -8,6 +8,8 @@ import { JwtStrategy } from 'src/auth/strategy/jwt.access.strategy';
 import { FreqDistrictEntity } from './entities/freq-district.entity';
 import { HttpModule } from '@nestjs/axios';
 import { DistrictXYEntity } from './entities/district-xy.entity';
+import { ConsumerService } from '../kafka/kafka-consumer.service';
+import { ProducerService } from '../kafka/kafka-producer.service';
 
 @Module({
   imports: [
@@ -15,6 +17,7 @@ import { DistrictXYEntity } from './entities/district-xy.entity';
     HttpModule.register({}),
   ],
   controllers: [LocationsController],
-  providers: [LocationService, JwtStrategy, Logger],
+  providers: [LocationService, ConsumerService, ProducerService, JwtStrategy, Logger],
+  exports: [ConsumerService, ProducerService],
 })
 export class LocationModule {}

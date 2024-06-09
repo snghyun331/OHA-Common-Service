@@ -37,6 +37,7 @@
     "cross-env": "^7.0.3",
     "eureka-js-client": "^4.5.0",
     "jsonwebtoken": "^9.0.2",
+    "kafkajs": "^2.2.4",
     "moment-timezone": "^0.5.45",
     "morgan": "^1.10.0",
     "nest-winston": "^1.9.4",
