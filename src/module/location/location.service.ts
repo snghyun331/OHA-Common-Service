@@ -7,6 +7,7 @@ import {
   Logger,
   LoggerService,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DistrictNameEntity } from './entities/district-name.entity';
@@ -22,7 +23,7 @@ import { calculateDistance } from 'src/utils/calculate-distance';
 import { ConsumerService } from '../kafka/kafka-consumer.service';
 
 @Injectable()
-export class LocationService {
+export class LocationService implements OnModuleInit {
   constructor(
     @Inject(Logger)
     private readonly logger: LoggerService,
@@ -342,6 +343,7 @@ export class LocationService {
       {
         eachMessage: async ({ topic, partition, message }) => {
           const event = JSON.parse(message.value.toString());
+          console.log(event);
           const { userId } = event;
           // freq-disctrict 테이블에서 userId 관련 정보 모두 삭제
           await this.deleteAllFreqDistrictsByUserId(userId);
