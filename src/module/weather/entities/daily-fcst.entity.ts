@@ -1,22 +1,22 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('DailyForecast')
+@Entity('daily_forecast')
 export class DailyForecastEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({name: 'weather_id'})
   weatherId: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'fcst_date',type: 'varchar', nullable: false })
   fcstDate: string;
 
-  @Column({ type: 'numeric', nullable: false })
+  @Column({ name: 'nx',type: 'numeric', nullable: false })
   nx: number;
 
-  @Column({ type: 'numeric', nullable: false })
+  @Column({ name: 'ny',type: 'numeric', nullable: false })
   ny: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'tmn',type: 'varchar', nullable: false })
   TMN: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'tmx',type: 'varchar', nullable: false })
   TMX: string;
 }

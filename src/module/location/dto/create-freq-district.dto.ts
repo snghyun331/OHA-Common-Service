@@ -3,9 +3,9 @@ import { IsOptional } from 'class-validator';
 
 export class CreateFreqDistrictDto {
   @ApiProperty({ example: '1135072000' })
-  readonly code: string;
+   code: string;
 
   @ApiHideProperty()
   @IsOptional()
-  readonly isDefault?: boolean;
+   isDefault?: boolean;
 }

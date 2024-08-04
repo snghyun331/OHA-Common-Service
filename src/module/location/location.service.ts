@@ -21,6 +21,7 @@ import { CurrentCoordinateDto } from './dto/current-coordinate.dto';
 import { DistrictXYEntity } from './entities/district-xy.entity';
 import { calculateDistance } from 'src/utils/calculate-distance';
 import { ConsumerService } from '../kafka/kafka-consumer.service';
+import { YNEnum } from 'src/common/enum/enum';
 
 @Injectable()
 export class LocationService implements OnModuleInit {
@@ -326,7 +327,7 @@ export class LocationService implements OnModuleInit {
     newFreqDistrict.code = code;
     newFreqDistrict.userId = userId;
     if (isDefault === true) {
-      newFreqDistrict.isDefault = isDefault;
+      newFreqDistrict.isDefault = YNEnum.YES;
     }
     return await transactionManager.save(newFreqDistrict);
   }
@@ -343,7 +344,6 @@ export class LocationService implements OnModuleInit {
       {
         eachMessage: async ({ topic, partition, message }) => {
           const event = JSON.parse(message.value.toString());
-          console.log(event);
           const { userId } = event;
           // freq-disctrict 테이블에서 userId 관련 정보 모두 삭제
           await this.deleteAllFreqDistrictsByUserId(userId);

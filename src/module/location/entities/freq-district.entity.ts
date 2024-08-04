@@ -1,16 +1,17 @@
+import { YNEnum } from 'src/common/enum/enum';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('Freq-District')
 export class FreqDistrictEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({name: 'freq_id'})
   freqId: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'code',type: 'varchar', nullable: false })
   code: string;
 
-  @Column({ type: 'numeric', nullable: false })
+  @Column({ name: 'user_id',type: 'numeric', nullable: false })
   userId: number;
 
-  @Column({ type: 'boolean', default: false, nullable: false })
-  isDefault: boolean;
+  @Column({ name: 'is_default',type: 'enum', enum: YNEnum, default: YNEnum.NO, nullable: false })
+  isDefault: YNEnum;
 }

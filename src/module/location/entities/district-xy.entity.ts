@@ -1,19 +1,20 @@
+import { YNEnum } from 'src/common/enum/enum';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('District-XY')
 export class DistrictXYEntity {
-  @PrimaryColumn({ type: 'varchar', nullable: false })
+  @PrimaryColumn({ name: 'code',type: 'varchar', nullable: false })
   code: string;
 
-  @Column({ type: 'numeric', nullable: false })
+  @Column({ name: 'longitude',type: 'numeric', nullable: false })
   longitude: number;
 
-  @Column({ type: 'numeric', nullable: false })
+  @Column({ name: 'latitude',type: 'numeric', nullable: false })
   latitude: number;
 
-  @Column({ type: 'boolean', nullable: false })
-  isHcode: boolean;
+  @Column({ name: 'is_hcode',type: 'enum', enum: YNEnum, nullable: false })
+  isHcode: YNEnum;
 
-  @Column({ type: 'boolean', nullable: false })
-  isBcode: boolean;
+  @Column({ name: 'is_bcode',type: 'enum', enum: YNEnum,nullable: false })
+  isBcode: YNEnum;
 }

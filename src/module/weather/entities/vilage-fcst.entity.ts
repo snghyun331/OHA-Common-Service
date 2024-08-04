@@ -1,37 +1,37 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('VilageForecast')
+@Entity('vilage_forecast')
 export class VilageForecastEntity {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({name: 'weather_id'})
   weatherId: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'fcst_date',type: 'varchar', nullable: false })
   fcstDate: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'fcst_time',type: 'varchar', nullable: false })
   fcstTime: string;
 
-  @Column({ type: 'numeric', nullable: false })
+  @Column({ name: 'nx',type: 'numeric', nullable: false })
   nx: number;
 
-  @Column({ type: 'numeric', nullable: false })
+  @Column({ name:'ny',type: 'numeric', nullable: false })
   ny: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'pop',type: 'varchar', nullable: false })
   POP: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'pty',type: 'varchar', nullable: false })
   PTY: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'reh',type: 'varchar', nullable: false })
   REH: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'sky',type: 'varchar', nullable: false })
   SKY: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'tmp',type: 'varchar', nullable: false })
   TMP: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ name: 'wsd',type: 'varchar', nullable: false })
   WSD: string;
 }
