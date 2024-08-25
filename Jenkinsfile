@@ -31,8 +31,6 @@ pipeline {
 
         stage('Deleting latest containers and images') {
             steps {
-                echo 'Deleting .env file......'
-                sh 'rm -f ./src/config/env/.product.env || true'
                 script {
                     echo 'Deleting latest containers for common.............'
                     sh 'docker kill common || true'  // 컨테이너가 없을 경우 에러 무시
@@ -49,24 +47,24 @@ pipeline {
                     echo "inserting env variables ............"
                     dir('./src/config/env') {
                         sh '''
-                            echo "NODE_ENV=${NODE_ENV}" > .product.env
-                            echo "HOST=${HOST}" >> .product.env
-                            echo "PORT1=${PORT1}" >> .product.env
-                            echo "PORT2=${PORT2}" >> .product.env
-                            echo "DB_HOST=${DB_HOST}" >> .product.env
-                            echo "DB_PORT=${DB_PORT}" >> .product.env
-                            echo "DB_USER=${DB_USER}" >> .product.env
-                            echo "DB_PW=${DB_PW}" >> .product.env
-                            echo "DB_NAME=${DB_NAME}" >> .product.env
-                            echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}" >> .product.env  
-                            echo "WEATHER_KEY=${WEATHER_KEY}" >> .product.env  
-                            echo "Eureka_HOST=${Eureka_HOST}" >> .product.env
-                            echo "Eureka_PORT=${Eureka_PORT}" >> .product.env
-                            echo "KAFKAJS_NO_PARTITIONER_WARNING=${KAFKAJS_NO_PARTITIONER_WARNING}" >> .product.env
-                            echo "KAFKA_ENV=${KAFKA_ENV}" >> .product.env
-                            echo "KAFKA_HOST=${KAFKA_HOST}" >> .product.env
-                            echo "KAFKA_PORT=${KAFKA_PORT}" >> .product.env
-                            echo "KAFKA_AUTO_OFFSET_RESET=${KAFKA_AUTO_OFFSET_RESET}" >> .product.env
+                            echo "NODE_ENV=${NODE_ENV}" > .env
+                            echo "HOST=${HOST}" >> .env
+                            echo "PORT1=${PORT1}" >> .env
+                            echo "PORT2=${PORT2}" >> .env
+                            echo "DB_HOST=${DB_HOST}" >> .env
+                            echo "DB_PORT=${DB_PORT}" >> .env
+                            echo "DB_USER=${DB_USER}" >> .env
+                            echo "DB_PW=${DB_PW}" >> .env
+                            echo "DB_NAME=${DB_NAME}" >> .env
+                            echo "JWT_SECRET_KEY=${JWT_SECRET_KEY}" >> .env  
+                            echo "WEATHER_KEY=${WEATHER_KEY}" >> .env  
+                            echo "Eureka_HOST=${Eureka_HOST}" >> .env
+                            echo "Eureka_PORT=${Eureka_PORT}" >> .env
+                            echo "KAFKAJS_NO_PARTITIONER_WARNING=${KAFKAJS_NO_PARTITIONER_WARNING}" >> .env
+                            echo "KAFKA_ENV=${KAFKA_ENV}" >> .env
+                            echo "KAFKA_HOST=${KAFKA_HOST}" >> .env
+                            echo "KAFKA_PORT=${KAFKA_PORT}" >> .env
+                            echo "KAFKA_AUTO_OFFSET_RESET=${KAFKA_AUTO_OFFSET_RESET}" >> .env
                         '''
                     }
                 }
