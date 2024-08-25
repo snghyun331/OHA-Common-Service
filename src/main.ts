@@ -1,29 +1,35 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './module/app.module';
-import { winstonLogger } from './config/winston.config';
-import * as morgan from 'morgan';
+import { WINSTON_CONFIG } from './config/winston.config';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { TransformInterceptor } from './interceptor/response.interceptors';
 import { SwaggerConfig } from './config/swagger.config';
 import { SwaggerModule } from '@nestjs/swagger';
 import { eurekaClient } from './config/eureka.config';
-
-const port = process.env.PORT1 || process.env.PORT2;
-const env = process.env.NODE_ENV;
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { WinstonModule } from 'nest-winston';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const winstonLogger = WinstonModule.createLogger(WINSTON_CONFIG);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    cors: true,
     logger: winstonLogger,
   });
 
+  const configService: ConfigService = app.get(ConfigService);
+  const env: string = configService.get<string>('NODE_ENV');
+  const SERVER_PORT: number = configService.get<number>('PORT1');
+
+  app.set('trust proxy', true);
+
   // cors settings
   const corsOptions: CorsOptions = {
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   };
   app.enableCors(corsOptions);
-
-  // app.use(morgan('combined'));  // product
-  app.use(morgan('dev')); // dev
 
   // use global interceptors
   app.useGlobalInterceptors(new TransformInterceptor());
@@ -37,15 +43,15 @@ async function bootstrap() {
 
   // run server
   try {
-    await app.listen(port);
-    if (env === 'product') {
+    await app.listen(SERVER_PORT);
+    if (env === 'dev' || env === 'prod') {
       eurekaClient.logger.level('log');
       eurekaClient.start();
     }
-    winstonLogger.log(`Server is listening on port ${port} successfully`);
+    winstonLogger.log(`✅ Server is listening on port ${SERVER_PORT}`);
   } catch (e) {
     winstonLogger.error(e);
-    winstonLogger.error('Failed to start the app server');
+    winstonLogger.error('⛔️ Failed to start the app server');
   }
 }
 bootstrap();

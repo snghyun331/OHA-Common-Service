@@ -1,14 +1,27 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { NestConfigModule } from 'src/config/config.config';
 import { DatabaseModule } from 'src/config/database.config';
 import { LocationModule } from 'src/module/location/location.module';
 import { WeatherModule } from 'src/module/weather/weather.module';
 import { SchedulerModule } from './schedule/schedule.module';
 import { KafkaModule } from './kafka/kafka.module';
+import { WinstonModule } from 'nest-winston';
+import { WINSTON_CONFIG } from 'src/config/winston.config';
+import { LoggerMiddleware } from 'src/common/middleware/logger.middleware';
 
 @Module({
-  imports: [NestConfigModule, DatabaseModule, LocationModule, WeatherModule, SchedulerModule, KafkaModule],
-  controllers: [],
-  providers: [],
+  imports: [
+    NestConfigModule,
+    DatabaseModule,
+    LocationModule,
+    WeatherModule,
+    SchedulerModule,
+    KafkaModule,
+    WinstonModule.forRoot(WINSTON_CONFIG),
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}

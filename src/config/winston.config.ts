@@ -1,20 +1,40 @@
-import { utilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
+import * as winstonDaily from 'winston-daily-rotate-file';
 import * as moment from 'moment-timezone';
 
-const env = process.env.NODE_ENV;
+const dailyOptions = (level: string) => {
+  return {
+    level,
+    datePattern: 'YYYYMMDD',
+    dirname: `logs/${level}`,
+    filename: `%DATE%_${level}.log`,
+    maxFiles: 2, // 2일치 로그파일 저장
+    zippedArchive: true, // 로그가 쌓이면 압축하여 관리
+    format: winston.format.combine(
+      winston.format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss',
+      }),
+      winston.format.printf(({ level, message, timestamp, stack, context }) => {
+        return `${timestamp} [${level}]: ${message} ${stack ? stack : ''} ${context ? JSON.stringify(context) : ''}`;
+      }),
+    ),
+  };
+};
 
-export const winstonLogger = WinstonModule.createLogger({
+export const WINSTON_CONFIG = {
   transports: [
     new winston.transports.Console({
-      level: env === 'product' ? 'http' : 'silly',
+      level: 'info',
       format: winston.format.combine(
+        winston.format.colorize({ all: true }),
         winston.format.timestamp({
-          format: () => moment().tz('Asia/Seoul').format('YYYY-MM-DD HH:mm:ss'),
+          format: () => moment().tz('Asia/Seoul').format('MM-DD HH:mm:ss'),
         }),
-        winston.format.colorize(),
-        utilities.format.nestLike('COMMON', { prettyPrint: true }),
+        winston.format.printf(({ level, message, timestamp, stack, context }) => {
+          return `${timestamp} [${level}]: ${message} ${stack ? stack : ''} ${context ? JSON.stringify(context) : ''}`;
+        }),
       ),
     }),
+    new winstonDaily(dailyOptions('error')),
   ],
-});
+};
