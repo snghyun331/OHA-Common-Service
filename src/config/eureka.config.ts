@@ -2,7 +2,6 @@ import { Eureka_Heartbeat_Interval, Eureka_Registery_Interval } from 'src/utils/
 import { Eureka } from 'eureka-js-client';
 
 const env = process.env.NODE_ENV;
-
 const appName = `COMMON-SERVICE${env === 'dev' ? '-DEV' : ''}`;
 const executeUrl = `${process.env.HOST}:${process.env.PORT1}`;
 

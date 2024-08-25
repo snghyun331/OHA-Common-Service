@@ -1,5 +1,4 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
-import { NestConfigModule } from 'src/config/config.config';
 import { DatabaseModule } from 'src/config/database.config';
 import { LocationModule } from 'src/module/location/location.module';
 import { WeatherModule } from 'src/module/weather/weather.module';
@@ -8,10 +7,14 @@ import { KafkaModule } from './kafka/kafka.module';
 import { WinstonModule } from 'nest-winston';
 import { WINSTON_CONFIG } from 'src/config/winston.config';
 import { LoggerMiddleware } from 'src/common/middleware/logger.middleware';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    NestConfigModule,
+    ConfigModule.forRoot({
+      envFilePath: `src/config/env/.env`,
+      isGlobal: true,
+    }),
     DatabaseModule,
     LocationModule,
     WeatherModule,
