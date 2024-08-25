@@ -8,4 +8,4 @@ ENV TZ Asia/Seoul
 
 EXPOSE 3010
 
-CMD ["yarn", "start:prod"]
+CMD ["yarn", "start:dev"]
