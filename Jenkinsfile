@@ -50,7 +50,7 @@ pipeline {
                     dir('./src/config/env') {
                         sh '''
                             echo "NODE_ENV=${NODE_ENV}" > .product.env
-                            echo "HOST=${HOST}" > .product.env
+                            echo "HOST=${HOST}" >> .product.env
                             echo "PORT1=${PORT1}" >> .product.env
                             echo "PORT2=${PORT2}" >> .product.env
                             echo "DB_HOST=${DB_HOST}" >> .product.env
