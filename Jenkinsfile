@@ -1,6 +1,7 @@
 pipeline {
     agent any
     environment {
+        NODE_ENV = credentials('node_env')
         HOST = credentials('host')
         PORT1 = credentials('port1')
         PORT2 = credentials('port2')
@@ -48,6 +49,7 @@ pipeline {
                     echo "inserting env variables ............"
                     dir('./src/config/env') {
                         sh '''
+                            echo "NODE_ENV=${NODE_ENV}" > .product.env
                             echo "HOST=${HOST}" > .product.env
                             echo "PORT1=${PORT1}" >> .product.env
                             echo "PORT2=${PORT2}" >> .product.env
