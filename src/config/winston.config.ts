@@ -35,6 +35,7 @@ export const WINSTON_CONFIG = {
         }),
       ),
     }),
+    new winstonDaily(dailyOptions('info')),
     new winstonDaily(dailyOptions('error')),
   ],
 };

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { KmaType } from 'src/module/weather/enums/kma.enum';
+import { KmaType } from 'src/module/weather/enum/kma.enum';
 
 export class WeatherDataDto {
   @ApiProperty({

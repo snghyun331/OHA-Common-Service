@@ -10,15 +10,15 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DistrictNameEntity } from './entities/district-name.entity';
+import { DistrictNameEntity } from '../../common/entity/location/district-name.entity';
 import { EntityManager, Repository } from 'typeorm';
-import { DistrictGridEntity } from './entities/district-grid.entity';
-import { FreqDistrictEntity } from './entities/freq-district.entity';
+import { DistrictGridEntity } from '../../common/entity/location/district-grid.entity';
+import { FreqDistrictEntity } from '../../common/entity/location/freq-district.entity';
 import { CreateFreqDistrictDto } from './dto/create-freq-district.dto';
 import { DeleteFreqDistrictDto } from './dto/delete-freq-district.dto';
 import { UpdateDefaultDistrictDto } from './dto/update-default-district.dto';
 import { CurrentCoordinateDto } from './dto/current-coordinate.dto';
-import { DistrictXYEntity } from './entities/district-xy.entity';
+import { DistrictXYEntity } from '../../common/entity/location/district-xy.entity';
 import { calculateDistance } from 'src/utils/calculate-distance';
 import { ConsumerService } from '../kafka/kafka-consumer.service';
 

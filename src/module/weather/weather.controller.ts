@@ -6,10 +6,10 @@ import {
   ApiResponseSuccess,
   ApiResponseWeatherSuccess,
   ApiTagWeather,
-} from 'src/utils/decorators';
+} from 'src/common/decorator';
 import { WeatherService } from './weather.service';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
-import { GetUserId } from 'src/utils/decorators/get-user.decorator';
+import { GetUserId } from 'src/common/decorator/get-user.decorator';
 
 @ApiTagWeather()
 @Controller('api/common/weather')
