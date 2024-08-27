@@ -19,7 +19,7 @@ async function bootstrap() {
 
   const configService: ConfigService = app.get(ConfigService);
   const env: string = configService.get<string>('NODE_ENV');
-  const SERVER_PORT: number = configService.get<number>('PORT1');
+  const SERVER_PORT: number = configService.get<number>('PORT');
 
   app.set('trust proxy', true);
 

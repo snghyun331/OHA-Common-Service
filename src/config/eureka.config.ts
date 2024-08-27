@@ -3,7 +3,7 @@ import { Eureka } from 'eureka-js-client';
 
 const env = process.env.NODE_ENV;
 const appName = `COMMON-SERVICE${env === 'dev' ? '-DEV' : ''}`;
-const executeUrl = `${process.env.HOST}:${process.env.PORT1}`;
+const executeUrl = `${process.env.HOST}:${process.env.PORT}`;
 
 export const eurekaClient = new Eureka({
   instance: {
@@ -11,7 +11,7 @@ export const eurekaClient = new Eureka({
     hostName: process.env.HOST,
     ipAddr: process.env.HOST,
     port: {
-      $: process.env.PORT1,
+      $: process.env.PORT,
       '@enabled': true,
     },
     vipAddress: appName,
