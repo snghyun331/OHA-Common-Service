@@ -7,9 +7,9 @@ import { lastValueFrom } from 'rxjs';
 import { NUM_OF_ROWS, PAGE_NO } from 'src/utils/constant';
 import { AvailableGrids } from 'src/utils/available-grids';
 import * as moment from 'moment-timezone';
-import { VilageForecastEntity } from '../weather/entities/vilage-fcst.entity';
-import { UltraSrtForecastEntity } from '../weather/entities/ultra-srt-fcst.entity';
-import { DailyForecastEntity } from '../weather/entities/daily-fcst.entity';
+import { VilageForecastEntity } from '../../common/entity/weather/vilage-fcst.entity';
+import { UltraSrtForecastEntity } from '../../common/entity/weather/ultra-srt-fcst.entity';
+import { DailyForecastEntity } from '../../common/entity/weather/daily-fcst.entity';
 
 @Injectable()
 export class SchdulerService {

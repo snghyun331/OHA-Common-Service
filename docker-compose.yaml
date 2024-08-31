@@ -1,0 +1,37 @@
+services:
+  oha-common:
+    build:
+      context: '.'
+      dockerfile: Dockerfile
+    container_name: 'common'
+    networks:
+      - net-default
+    ports:
+      - '3010:3010'
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+    env_file:
+      - './.env'
+    environment:
+      - TZ=Asia/Seoul
+    # restart: on-failure
+    # deploy:
+    #   # 재시작 정책 (컨테이너 실패 시 자동 재시작 설정)
+    #   restart_policy:
+    #     condition: on-failure
+    #   # 업데이트 정책 (서비스 업데이트 시 중단 없는 배포를 위함)
+    #   update_config:
+    #     parallelism: 1
+    #     delay: 5s
+    #   replicas: 1
+    #   # 자원 정책
+    #   resources:
+    #     limits:
+    #       memory: '3G'
+    #     reservations:
+    #       cpus: '1'
+
+networks:
+  net-default:
+    driver: bridge

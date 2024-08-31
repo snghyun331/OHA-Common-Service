@@ -1,0 +1,45 @@
+name: Deploy to testServer
+
+on:
+  push:
+    branches: ['dev']
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: remote ssh
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.TEST_SSH_HOST }}
+          username: ${{ secrets.TEST_SSH_USER }}
+          key: ${{ secrets.TEST_PRIVATE_KEY }}
+          timeout: 60s
+          script: |
+            echo "############# MOVE DIRECTORY #############"
+            cd /home/testServer/common/api
+            echo "############# GIT PULL #############"
+            git remote set-url origin https://x-access-token:${{ secrets.ACCESS_TOKEN }}@github.com/O-H-A/OHA-Diary-Service.git
+            sudo git pull origin dev
+            echo "############# CREATE .ENV #############"
+            [ -f .env ] && rm .env
+            touch .env
+            echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
+            echo "HOST=${{ secrets.HOST }}" >> .env
+            echo "PORT=${{ secrets.PORT }}" >> .env
+            echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+            echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+            echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+            echo "DB_PW=${{ secrets.DB_PW }}" >> .env
+            echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+            echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+            echo "WEATHER_KEY=${{ secrets.WEATHER_KEY }}" >> .env
+            echo "Eureka_HOST=${{ secrets.Eureka_HOST }}" >> .env
+            echo "Eureka_PORT=${{ secrets.Eureka_PORT }}" >> .env
+            echo "KAFKAJS_NO_PARTITIONER_WARNING=${{ secrets.KAFKAJS_NO_PARTITIONER_WARNING }}" >> .env
+            echo "KAFKA_ENV=${{ secrets.KAFKA_ENV }}" >> .env
+            echo "KAFKA_HOST=${{ secrets.KAFKA_HOST }}" >> .env
+            echo "KAFKA_PORT=${{ secrets.KAFKA_PORT }}" >> .env
+            echo "KAFKA_AUTO_OFFSET_RESET=${{ secrets.KAFKA_AUTO_OFFSET_RESET }}" >> .env
+            echo "############# RUN SCRIPT #############"
+            sh script.sh

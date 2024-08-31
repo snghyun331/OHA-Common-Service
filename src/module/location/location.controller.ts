@@ -30,11 +30,11 @@ import {
   ApiResponseSuccess,
   ApiTagLocation,
   ApiResponseAllDistrictSuccess,
-} from 'src/utils/decorators';
+} from 'src/common/decorator';
 import { GetCodeDto } from './dto/get-code.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { GetNameDto } from './dto/get-name.dto';
-import { TransactionInterceptor } from 'src/interceptor/transaction.interceptor';
+import { TransactionInterceptor } from 'src/common/interceptor/transaction.interceptor';
 import { CreateFreqDistrictDto } from './dto/create-freq-district.dto';
 import { DeleteFreqDistrictDto } from './dto/delete-freq-district.dto';
 import { UpdateDefaultDistrictDto } from './dto/update-default-district.dto';
