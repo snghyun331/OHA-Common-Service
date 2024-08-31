@@ -37,9 +37,6 @@ lerna-debug.log*
 # env
 **/*.env
 
-# script
-script.sh
-
 # docker compose
 docker-compose.dev.yaml
 docker-compose.prod.yaml

@@ -16,6 +16,11 @@ jobs:
           key: ${{ secrets.TEST_PRIVATE_KEY }}
           timeout: 60s
           script: |
+            echo "############# MOVE DIRECTORY #############"
+            cd /home/testServer/common/api
+            echo "############# GIT PULL #############"
+            git remote set-url origin https://x-access-token:${{ secrets.ACCESS_TOKEN }}@github.com/O-H-A/OHA-Diary-Service.git
+            sudo git pull origin dev
             echo "############# CREATE .ENV #############"
             [ -f .env ] && rm .env
             touch .env
@@ -36,9 +41,5 @@ jobs:
             echo "KAFKA_HOST=${{ secrets.KAFKA_HOST }}" >> .env
             echo "KAFKA_PORT=${{ secrets.KAFKA_PORT }}" >> .env
             echo "KAFKA_AUTO_OFFSET_RESET=${{ secrets.KAFKA_AUTO_OFFSET_RESET }}" >> .env
-            echo "############# MOVE DIRECTORY #############"
-            cd ../../common/api
-            echo "############# GIT PULL #############"
-            sudo git pull origin dev
             echo "############# RUN SCRIPT #############"
             sh script.sh
