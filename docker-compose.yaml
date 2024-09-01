@@ -35,3 +35,4 @@ services:
 networks:
   net-default:
     driver: bridge
+    externel: true
