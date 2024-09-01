@@ -73,6 +73,9 @@ export class WeatherService {
   // 일교차 심한 지 여부 판별하는 함수 (10도 차이)
   async isTempDiffHigh(baseDate, nx, ny) {
     const result = await this.dailyForecastRepository.findOne({ where: { fcstDate: baseDate, nx: nx, ny: ny } });
+    if (!result.TMN || !result.TMX) {
+      return false;
+    }
     if (parseInt(result.TMX) - parseInt(result.TMN) >= 10) {
       return true;
     } else {
