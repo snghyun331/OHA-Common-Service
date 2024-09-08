@@ -10,11 +10,12 @@ import { HttpModule } from '@nestjs/axios';
 import { DistrictXYEntity } from '../../common/entity/location/district-xy.entity';
 import { ConsumerService } from '../kafka/kafka-consumer.service';
 import { ProducerService } from '../kafka/kafka-producer.service';
+import { AXIOS_CONFIG } from 'src/config/axios.config';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([DistrictGridEntity, DistrictNameEntity, FreqDistrictEntity, DistrictXYEntity]),
-    HttpModule.register({}),
+    HttpModule.registerAsync(AXIOS_CONFIG),
   ],
   controllers: [LocationsController],
   providers: [LocationService, ConsumerService, ProducerService, JwtStrategy, Logger],

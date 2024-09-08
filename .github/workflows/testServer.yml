@@ -19,9 +19,11 @@ jobs:
           script: |
             echo "############# MOVE DIRECTORY #############"
             cd /home/testServer/common/api
+
             echo "############# GIT PULL #############"
             git remote set-url origin https://x-access-token:${{ secrets.ACCESS_TOKEN }}@github.com/O-H-A/OHA-Common-Service.git
             sudo git pull origin dev
+
             echo "############# CREATE .ENV #############"
             [ -f .env ] && rm .env
             touch .env
@@ -42,5 +44,8 @@ jobs:
             echo "KAFKA_HOST=${{ secrets.KAFKA_HOST }}" >> .env
             echo "KAFKA_PORT=${{ secrets.KAFKA_PORT }}" >> .env
             echo "KAFKA_AUTO_OFFSET_RESET=${{ secrets.KAFKA_AUTO_OFFSET_RESET }}" >> .env
+            echo "AXIOS_MAX_REDIRECTS=${{ secrets.AXIOS_MAX_REDIRECTS }}" >> .env
+            echo "AXIOS_TIMEOUT=${{ secrets.AXIOS_TIMEOUT }}" >> .env
+
             echo "############# RUN SCRIPT #############"
             sh script.sh
